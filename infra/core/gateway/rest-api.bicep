@@ -19,6 +19,9 @@ param policy string = ''
 @description('The OpenAPI description of the API')
 param definition string
 
+@description('The named values that need to be defined prior to the policy being uploaded')
+param namedValues array = []
+
 @description('The number of bytes of the request/response body to record for diagnostic purposes')
 param logBytes int = 8192
 
@@ -53,6 +56,16 @@ resource restApi 'Microsoft.ApiManagement/service/apis@2022-04-01-preview' = {
   }
 }
 
+resource apimNamedValue 'Microsoft.ApiManagement/service/namedValues@2022-04-01-preview' = [for nv in namedValues: {
+  name: nv.key
+  parent: apimService
+  properties: {
+    displayName: nv.key
+    secret: contains(nv, 'secret') ? nv.secret : false
+    value: nv.value
+  }
+}]
+
 resource apiPolicy 'Microsoft.ApiManagement/service/apis/policies@2022-04-01-preview' = {
   name: 'policy'
   parent: restApi
@@ -60,6 +73,9 @@ resource apiPolicy 'Microsoft.ApiManagement/service/apis/policies@2022-04-01-pre
     format: 'rawxml'
     value: realPolicy
   }
+  dependsOn: [
+    apimNamedValue
+  ]
 }
 
 resource diagnosticsPolicy 'Microsoft.ApiManagement/service/apis/diagnostics@2022-04-01-preview' = if (!empty(apimLoggerName)) {

@@ -111,19 +111,19 @@ module apiManagement './core/gateway/api-management.bicep' = {
 // ---------------------------------------------------------------------------------------------
 //  API: Star Wars REST
 // ---------------------------------------------------------------------------------------------
-// module starWarsRestApiService './app/starwars-rest-api.bicep' = {
-//   name: 'starwars-rest-api-service'
-//   scope: rg
-//   params: {
-//     name: !empty(starwarsRestServiceName) ? starwarsRestServiceName : 'starwars-rest-${resourceToken}'
-//     location: location
-//     tags: union(tags, { 'azd-service-name': 'starwars-rest' })
-//     applicationInsightsName: monitoring.outputs.applicationInsightsName
-//     appServicePlanId: appServicePlan.outputs.id
-//     apiManagementServiceName: apiManagement.outputs.serviceName
-//     apiManagementLoggerName: apiManagement.outputs.loggerName
-//   }
-// }
+module starWarsRestApiService './app/starwars-rest-api.bicep' = {
+  name: 'starwars-rest-api-service'
+  scope: rg
+  params: {
+    name: !empty(starwarsRestServiceName) ? starwarsRestServiceName : 'starwars-rest-${resourceToken}'
+    location: location
+    tags: union(tags, { 'azd-service-name': 'starwars-rest' })
+    applicationInsightsName: monitoring.outputs.applicationInsightsName
+    appServicePlanId: appServicePlan.outputs.id
+    apiManagementServiceName: apiManagement.outputs.serviceName
+    apiManagementLoggerName: apiManagement.outputs.loggerName
+  }
+}
 
 // ---------------------------------------------------------------------------------------------
 //  OUTPUTS
@@ -134,5 +134,5 @@ module apiManagement './core/gateway/api-management.bicep' = {
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.applicationInsightsConnectionString
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
-//output API_MANAGEMENT_SERVICE_URI string = apiManagement.outputs.uri
-//output STARWARS_REST_GATEWAY_URI string = starWarsRestApiService.outputs.gatewayUri
+output API_MANAGEMENT_SERVICE_URI string = apiManagement.outputs.uri
+output STARWARS_REST_GATEWAY_URI string = starWarsRestApiService.outputs.gatewayUri
