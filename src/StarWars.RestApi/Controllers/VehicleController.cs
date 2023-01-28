@@ -20,7 +20,7 @@ public class VehicleController : ControllerBase
 
     [HttpGet]
     [Produces("application/json")]
-    [ProducesDefaultResponseType(typeof(IEnumerable<Vehicle>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<Vehicle>))]
     public IEnumerable<Vehicle> GetAllVehicles()
     {
         return datamodel.Vehicles.Values;

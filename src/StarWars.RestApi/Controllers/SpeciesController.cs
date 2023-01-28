@@ -20,7 +20,7 @@ public class SpeciesController : ControllerBase
 
     [HttpGet]
     [Produces("application/json")]
-    [ProducesDefaultResponseType(typeof(IEnumerable<Species>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<Species>))]
     public IEnumerable<Species> GetAllSpeciess()
     {
         return datamodel.Species.Values;

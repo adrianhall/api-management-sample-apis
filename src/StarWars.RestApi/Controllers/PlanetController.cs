@@ -20,7 +20,7 @@ public class PlanetController : ControllerBase
 
     [HttpGet]
     [Produces("application/json")]
-    [ProducesDefaultResponseType(typeof(IEnumerable<Planet>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<Planet>))]
     public IEnumerable<Planet> GetAllPlanets()
     {
         return datamodel.Planets.Values;

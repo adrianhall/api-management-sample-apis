@@ -20,7 +20,7 @@ public class FilmController : ControllerBase
 
     [HttpGet]
     [Produces("application/json")]
-    [ProducesDefaultResponseType(typeof(IEnumerable<Film>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<Film>))]
     public IEnumerable<Film> GetAllFilms()
     {
         return datamodel.Films.Values;

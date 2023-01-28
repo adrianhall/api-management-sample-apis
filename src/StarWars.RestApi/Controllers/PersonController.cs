@@ -20,7 +20,7 @@ public class PersonController : ControllerBase
 
     [HttpGet]
     [Produces("application/json")]
-    [ProducesDefaultResponseType(typeof(IEnumerable<Person>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<Person>))]
     public IEnumerable<Person> Get()
     {
         return datamodel.People.Values;

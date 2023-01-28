@@ -20,7 +20,7 @@ public class StarshipController : ControllerBase
 
     [HttpGet]
     [Produces("application/json")]
-    [ProducesDefaultResponseType(typeof(IEnumerable<Starship>))]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<Starship>))]
     public IEnumerable<Starship> GetAllStarships()
     {
         return datamodel.Starships.Values;

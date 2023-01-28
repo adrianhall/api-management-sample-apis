@@ -7,6 +7,19 @@ using StarWars.RestApi.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 /*
+** CORS
+*/
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin();
+        policy.AllowAnyHeader();
+        policy.AllowAnyMethod();
+    });
+});
+
+/*
 ** Add the data model to the service builder so it can be accessed everywhere.
 */
 builder.Services.AddSingleton<StarWarsData>();
@@ -30,6 +43,11 @@ builder.Services.AddSwaggerGen();
 ** HTTP PIPELINE BUILDER
 */
 var app = builder.Build();
+
+/*
+** CORS
+*/
+app.UseCors();
 
 /*
 ** Add Swagger support.
