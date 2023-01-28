@@ -1,6 +1,13 @@
+@description('The name of the API Management service')
 param name string
+
+@description('The region where the API Management service should be deployed')
 param location string = resourceGroup().location
+
+@description('The tags that should be applied to the API Management service')
 param tags object = {}
+
+@description('The named values that should be installed for this API Management service')
 param namedValues array = []
 
 @description('The email address of the owner of the service')
@@ -50,15 +57,15 @@ resource apimLogger 'Microsoft.ApiManagement/service/loggers@2021-12-01-preview'
   }
 }
 
-// resource apimNamedValue 'Microsoft.ApiManagement/service/namedValues@2022-04-01-preview' = [for nv in namedValues: {
-//   name: nv.key
-//   parent: apimService
-//   properties: {
-//     displayName: nv.key
-//     secret: contains(nv, 'secret') ? nv.secret : false
-//     value: nv.value
-//   }
-// }]
+resource apimNamedValue 'Microsoft.ApiManagement/service/namedValues@2022-04-01-preview' = [for nv in namedValues: {
+  name: nv.key
+  parent: apimService
+  properties: {
+    displayName: nv.key
+    secret: contains(nv, 'secret') ? nv.secret : false
+    value: nv.value
+  }
+}]
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = if (!empty(applicationInsightsName)) {
   name: applicationInsightsName
