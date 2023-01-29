@@ -65,6 +65,7 @@ public class ListsController : ControllerBase
     [Produces("application/json")]
     [ProducesResponseType(200, Type = typeof(TodoList))]
     [ProducesResponseType(404)]
+    [ActionName(nameof(GetListAsync))]
     public async Task<ActionResult> GetListAsync([FromRoute] string id, CancellationToken cancellationToken = default)
     {
         var list = await listsRepository.GetEntityAsync(id, cancellationToken);
@@ -141,11 +142,20 @@ public class ListsController : ControllerBase
             return NotFound();
         }
 
-        var newitem = new TodoItem(id, item.Name)
+        var newitem = new TodoItem(id, item.Name) { Description = item.Description };
+        if (string.IsNullOrEmpty(item.State))
         {
-            Description = item.Description,
-            State = item.State
-        };
+            newitem.State = TodoItemState.Todo;
+        }
+        else if (Utils.ParseState(item.State, out TodoItemState state))
+        {
+            newitem.State = state;
+        }
+        else
+        {
+            return BadRequest();
+        }
+
         var saveditem = await itemsRepository.SaveEntityAsync(newitem, cancellationToken);
         return CreatedAtAction(nameof(GetListItemAsync), new { id, item_id = saveditem.Id }, saveditem);
     }
@@ -154,6 +164,7 @@ public class ListsController : ControllerBase
     [Produces("application/json")]
     [ProducesResponseType(200, Type = typeof(TodoItem))]
     [ProducesResponseType(404)]
+    [ActionName(nameof(GetListItemAsync))]
     public async Task<ActionResult<TodoItem>> GetListItemAsync([FromRoute] string id, [FromRoute] string item_id, CancellationToken cancellationToken = default)
     {
         var list = await listsRepository.GetEntityAsync(id, cancellationToken);
@@ -181,7 +192,14 @@ public class ListsController : ControllerBase
         existingitem.Description = item.Description;
         existingitem.CompletedDate = item.CompletedDate;
         existingitem.DueDate = item.DueDate;
-        existingitem.State = item.State;
+        if (!string.IsNullOrEmpty(item.State) && Utils.ParseState(item.State, out TodoItemState state))
+        {
+            existingitem.State = state;
+        }
+        else
+        {
+            return BadRequest();
+        }
 
         var saveditem = await itemsRepository.SaveEntityAsync(existingitem, cancellationToken);
         return Ok(saveditem);
@@ -206,13 +224,17 @@ public class ListsController : ControllerBase
     [Produces("application/json")]
     [ProducesResponseType(200, Type = typeof(Page<TodoItem>))]
     [ProducesResponseType(404)]
-    public async Task<ActionResult<Page<TodoItem>>> GetListItemsByStateAsync([FromRoute] string id, [FromRoute] TodoItemState state, [FromQuery(Name = "$skip")] int? skip = null, [FromQuery(Name = "$top")] int? batchSize = null, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<Page<TodoItem>>> GetListItemsByStateAsync([FromRoute] string id, [FromRoute] string state, [FromQuery(Name = "$skip")] int? skip = null, [FromQuery(Name = "$top")] int? batchSize = null, CancellationToken cancellationToken = default)
     {
+        if (!Utils.ParseState(state, out TodoItemState parsedState))
+        {
+            return BadRequest();
+        }
         var list = await listsRepository.GetEntityAsync(id, cancellationToken);
         if (list == null)
         {
             return NotFound();
         }
-        return Ok(Utils.PagedResponse<TodoItem>(itemsRepository.AsQueryable().Where(item => item.ListId == id && item.State == state), skip, batchSize, GetBaseUri()));
+        return Ok(Utils.PagedResponse<TodoItem>(itemsRepository.AsQueryable().Where(item => item.ListId == id && item.State == parsedState), skip, batchSize, GetBaseUri()));
     }
 }

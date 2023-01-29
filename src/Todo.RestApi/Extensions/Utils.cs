@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All Rights Reserved.
 // Licensed under the MIT License.
 
+using Todo.Data.Models;
 using Todo.RestApi.DataTransferObjects;
 
 namespace Todo.RestApi.Extensions;
@@ -40,11 +41,11 @@ public static class Utils
     /// <param name="batchSize">The $top value.</param>
     /// <param name="baseUri">The base URI of the request.</param>
     /// <returns></returns>
-    public static Page<T> PagedResponse<T>(IQueryable<T> queryable, int? skip, int? batchSize, string baseUri)
+    public static Page<T> PagedResponse<T>(IQueryable<T> queryable, int? skip, int? batchSize, string baseUri) where T : TodoBaseModel
     {
         int totalCount = queryable.Count();
         int skipValue = skip ?? 0;
-        var items = queryable.Skip(skipValue).Take(GetBatchSize(batchSize)).ToList();
+        var items = queryable.OrderBy(item => item.CreatedDate).Skip(skipValue).Take(GetBatchSize(batchSize)).ToList();
         bool hasMoreitems = skipValue + items.Count < totalCount;
         Uri? nextLink = !hasMoreitems ? null : new Uri($"{baseUri}?$skip={skipValue + items.Count}&$top={GetBatchSize(batchSize)}");
         return new Page<T>
@@ -53,5 +54,36 @@ public static class Utils
             HasMoreItems = hasMoreitems,
             NextLink = nextLink
         };
+    }
+
+    /// <summary>
+    /// Converts a State string into a TodoItemState.
+    /// </summary>
+    /// <param name="input"></param>
+    /// <param name="state"></param>
+    /// <returns></returns>
+    public static bool ParseState(string input, out TodoItemState state)
+    {
+        state = TodoItemState.Todo;
+        if (input.Equals("todo", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        if (input.Equals("inprogress", StringComparison.OrdinalIgnoreCase))
+        {
+            state = TodoItemState.InProgress;
+            return true;
+        }
+        if (input.Equals("in_progress", StringComparison.OrdinalIgnoreCase))
+        {
+            state = TodoItemState.InProgress;
+            return true;
+        }
+        if (input.Equals("done", StringComparison.OrdinalIgnoreCase))
+        {
+            state = TodoItemState.Done;
+            return true;
+        }
+        return false;
     }
 }
