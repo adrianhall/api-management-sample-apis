@@ -41,6 +41,7 @@ param resourceGroupName string = ''
 
 // Underlying API Service Names
 param starwarsRestServiceName string = ''
+param todoRestServiceName string = ''
 
 // API Management instance
 param apiManagementServiceName string = ''
@@ -76,6 +77,23 @@ module monitoring './core/monitor/monitoring.bicep' = {
     applicationInsightsDashboardName: !empty(applicationInsightsDashboardName) ? applicationInsightsDashboardName : '${abbrs.portalDashboards}${resourceToken}'
   }
 }
+
+// ---------------------------------------------------------------------------------------------
+//  Database (Cosmos DB)
+// ---------------------------------------------------------------------------------------------
+// module cosmos './core/database/cosmos-sql-db.bicep' = {
+//   name: 'cosmos-sql'
+//   params: {
+//     accountName: !empty(cosmosAccountName) ? cosmosAccountName : '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
+//     location: location
+//     tags: tags
+//     databaseName: !empty(cosmosDatabaseName) ? cosmosDatabaseName : 'apisamples'
+//     containers: [
+//       { name: 'TodoList' }
+//       { name: 'TodoItem' }
+//     ]
+//   }
+// }
 
 // ---------------------------------------------------------------------------------------------
 //  API Services (App Services)
@@ -124,6 +142,24 @@ module starWarsRestApiService './app/starwars-rest-api.bicep' = {
     apiManagementLoggerName: apiManagement.outputs.loggerName
   }
 }
+
+// ---------------------------------------------------------------------------------------------
+//  API: Star Wars REST
+// ---------------------------------------------------------------------------------------------
+module todoRestApiService './app/todo-rest-api.bicep' = {
+  name: 'todo-rest-api-service'
+  scope: rg
+  params: {
+    name: !empty(todoRestServiceName) ? todoRestServiceName : 'todo-rest-${resourceToken}'
+    location: location
+    tags: union(tags, { 'azd-service-name': 'todo-rest' })
+    applicationInsightsName: monitoring.outputs.applicationInsightsName
+    appServicePlanId: appServicePlan.outputs.id
+    apiManagementServiceName: apiManagement.outputs.serviceName
+    apiManagementLoggerName: apiManagement.outputs.loggerName
+  }
+}
+
 
 // ---------------------------------------------------------------------------------------------
 //  OUTPUTS
