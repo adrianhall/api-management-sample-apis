@@ -8,4 +8,8 @@ services:
     project: ./src/StarWars.RestApi
     language: csharp
     host: appservice
+  todo-rest:
+    project: ./src/Todo.RestApi
+    language: csharp
+    host: appservice
     

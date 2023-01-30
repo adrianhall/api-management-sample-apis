@@ -34,8 +34,8 @@ param location string
 param applicationInsightsDashboardName string = ''
 param applicationInsightsName string = ''
 param appServicePlanName string = ''
-//param cosmosAccountName string = ''
-//param cosmosDatabaseName string = ''
+param cosmosAccountName string = ''
+param cosmosDatabaseName string = ''
 param logAnalyticsName string = ''
 param resourceGroupName string = ''
 
@@ -53,6 +53,11 @@ param apiManagementServiceName string = ''
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var tags = { 'azd-env-name': environmentName }
+
+var todoAppContainers = [
+  { name: 'TodoList', id: 'TodoList', partitionKey: '/id' }
+  { name: 'TodoItem', id: 'TodoItem', partitionKey: '/id' }
+]
 
 // ---------------------------------------------------------------------------------------------
 //  RESOURCE GROUP
@@ -81,19 +86,19 @@ module monitoring './core/monitor/monitoring.bicep' = {
 // ---------------------------------------------------------------------------------------------
 //  Database (Cosmos DB)
 // ---------------------------------------------------------------------------------------------
-// module cosmos './core/database/cosmos-sql-db.bicep' = {
-//   name: 'cosmos-sql'
-//   params: {
-//     accountName: !empty(cosmosAccountName) ? cosmosAccountName : '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
-//     location: location
-//     tags: tags
-//     databaseName: !empty(cosmosDatabaseName) ? cosmosDatabaseName : 'apisamples'
-//     containers: [
-//       { name: 'TodoList' }
-//       { name: 'TodoItem' }
-//     ]
-//   }
-// }
+module cosmos './app/cosmos-db.bicep' = {
+  name: 'cosmos-sql'
+  scope: rg
+  params: {
+    accountName: !empty(cosmosAccountName) ? cosmosAccountName : '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
+    location: location
+    tags: tags
+    databaseName: !empty(cosmosDatabaseName) ? cosmosDatabaseName : 'apisamples'
+    // Define the containers for a specific API in a variables, then use concat to create the superset.
+    // We use union so that duplicate values are ignored.
+    containers: union([], todoAppContainers)
+  }
+}
 
 // ---------------------------------------------------------------------------------------------
 //  API Services (App Services)
@@ -154,12 +159,25 @@ module todoRestApiService './app/todo-rest-api.bicep' = {
     location: location
     tags: union(tags, { 'azd-service-name': 'todo-rest' })
     applicationInsightsName: monitoring.outputs.applicationInsightsName
+    appSettings: {
+      AZURE_COSMOS_DATABASE_NAME: cosmos.outputs.databaseName
+      AZURE_COSMOS_ENDPOINT: cosmos.outputs.endpoint
+    }
     appServicePlanId: appServicePlan.outputs.id
     apiManagementServiceName: apiManagement.outputs.serviceName
     apiManagementLoggerName: apiManagement.outputs.loggerName
   }
 }
 
+module todoRestApiCosmosSqlRole './core/database/cosmos/cosmos-sql-role-assign.bicep' = {
+  name: 'todo-rest-api-service-cosmos-access'
+  scope: rg
+  params: {
+    accountName: cosmos.outputs.accountName
+    roleDefinitionId: cosmos.outputs.roleDefinitionId
+    principalId: todoRestApiService.outputs.servicePrincipalId
+  }
+}
 
 // ---------------------------------------------------------------------------------------------
 //  OUTPUTS
@@ -168,7 +186,10 @@ module todoRestApiService './app/todo-rest-api.bicep' = {
 //
 // ---------------------------------------------------------------------------------------------
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.applicationInsightsConnectionString
+output API_MANAGEMENT_SERVICE_URI string = apiManagement.outputs.uri
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
-output API_MANAGEMENT_SERVICE_URI string = apiManagement.outputs.uri
+output COSMOS_DATABASE_NAME string = cosmos.outputs.databaseName
+output COSMOS_ENDPOINT string = cosmos.outputs.endpoint
 output STARWARS_REST_GATEWAY_URI string = starWarsRestApiService.outputs.gatewayUri
+output TODO_REST_GATEWAY_URI string = todoRestApiService.outputs.gatewayUri

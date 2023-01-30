@@ -7,6 +7,11 @@ using StarWars.RestApi.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 /*
+** Application Insights logging
+*/
+builder.Services.AddApplicationInsightsTelemetry();
+
+/*
 ** CORS
 */
 builder.Services.AddCors(options =>

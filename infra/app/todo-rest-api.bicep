@@ -1,6 +1,7 @@
 param name string
 param location string
 param tags object = {}
+param appSettings object = {}
 
 param applicationInsightsName string = ''
 param appServicePlanId string
@@ -16,10 +17,11 @@ module apiService '../core/host/appservice.bicep' = {
     appCommandLine: ''
     applicationInsightsName: applicationInsightsName
     appServicePlanId: appServicePlanId
-    appSettings: {}
+    appSettings: appSettings
     runtimeName: 'dotnetcore'
     runtimeVersion: '6.0'
     scmDoBuildDuringDeployment: false
+    useManagedIdentity: true
   }
 }
 
@@ -38,3 +40,4 @@ module restApiDefinition '../core/gateway/rest-api.bicep' = if (!empty(apiManage
 
 output serviceUri string = apiService.outputs.uri
 output gatewayUri string = restApiDefinition.outputs.serviceUrl
+output servicePrincipalId string = apiService.outputs.servicePrincipalId

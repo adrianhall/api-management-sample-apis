@@ -10,6 +10,7 @@ param runtimeName string
 param runtimeVersion string
 param runtimeNameAndVersion string = '${runtimeName}|${runtimeVersion}'
 param kind string = 'app,linux'
+param useManagedIdentity bool = true
 
 // Microsoft.Web/sites/config
 param allowedOrigins array = []
@@ -50,7 +51,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
     clientAffinityEnabled: clientAffinityEnabled
     httpsOnly: true
   }
-  identity: { type: 'None' }
+  identity: { type: useManagedIdentity ? 'SystemAssigned' : 'None' }
 
   resource configAppSettings 'config' = {
     name: 'appsettings'
@@ -82,3 +83,4 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing
 
 output name string = appService.name
 output uri string = 'https://${appService.properties.defaultHostName}'
+output servicePrincipalId string = useManagedIdentity ? appService.identity.principalId : ''
