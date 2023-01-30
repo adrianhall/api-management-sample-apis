@@ -3,10 +3,8 @@
 
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Cosmos.Serialization.HybridRow.Layouts;
 using System.Web;
 using Todo.Data;
-using Todo.Data.Models;
 using Todo.RestApi.DataTransferObjects;
 using Todo.RestApi.Extensions;
 
@@ -16,14 +14,12 @@ namespace Todo.RestApi.Controllers;
 [Route("/todo/lists")]
 public class ListsController : ControllerBase
 {
-    private readonly ITodoRepository<TodoItem> itemsRepository;
-    private readonly ITodoRepository<TodoList> listsRepository;
+    private readonly TodoDbContext dbContext;
     private readonly IHttpContextAccessor contextAccessor;
 
-    public ListsController(ITodoRepository<TodoList> listsRepository, ITodoRepository<TodoItem> itemsRepository, IHttpContextAccessor contextAccessor)
+    public ListsController(TodoDbContext dbContext, IHttpContextAccessor contextAccessor)
     {
-        this.itemsRepository = itemsRepository;
-        this.listsRepository = listsRepository;
+        this.dbContext = dbContext;
         this.contextAccessor = contextAccessor;
     }
 
@@ -45,11 +41,28 @@ public class ListsController : ControllerBase
         return baseUri.ToString();
     }
 
+    /// <summary>
+    /// Gets a list by it's ID.
+    /// </summary>
+    /// <param name="id">The ID of the entity to retrieve.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe.</param>
+    /// <returns>The entity, or <c>null</c> if not found.</returns>
+    private async ValueTask<TodoList?> GetListByIdAsync(string id, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.TodoLists.FindAsync(new[] { id }, cancellationToken);
+    }
+
     [HttpGet]
     [Produces("application/json")]
     [ProducesResponseType(200, Type = typeof(Page<TodoList>))]
     public ActionResult<Page<TodoList>> GetLists([FromQuery(Name = "$skip")] int? skip = null, [FromQuery(Name = "$top")] int? batchSize = null)
-        => Ok(Utils.PagedResponse(listsRepository.AsQueryable(), skip, batchSize, GetBaseUri()));
+    {
+        if (!Utils.ValidateSkipTop(skip, batchSize))
+        {
+            return BadRequest();
+        }
+        return Ok(Utils.PagedResponse(dbContext.TodoLists, skip, batchSize, GetBaseUri()));
+    } 
 
     [HttpPost]
     [Produces("application/json")]
@@ -57,8 +70,9 @@ public class ListsController : ControllerBase
     public async Task<ActionResult> CreateListAsync([FromBody] CreateUpdateTodoList list, CancellationToken cancellationToken = default)
     {
         var newlist = new TodoList(list.Name) { Description = list.Description };
-        var savedlist = await listsRepository.SaveEntityAsync(newlist, cancellationToken);
-        return CreatedAtAction(nameof(GetListAsync), new { id = savedlist.Id }, savedlist);
+        var entity = dbContext.TodoLists.Add(newlist);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return CreatedAtAction(nameof(GetListAsync), new { id = entity.Entity.Id }, entity.Entity);
     }
 
     [HttpGet("{id}")]
@@ -68,7 +82,7 @@ public class ListsController : ControllerBase
     [ActionName(nameof(GetListAsync))]
     public async Task<ActionResult> GetListAsync([FromRoute] string id, CancellationToken cancellationToken = default)
     {
-        var list = await listsRepository.GetEntityAsync(id, cancellationToken);
+        var list = await GetListByIdAsync(id, cancellationToken);
         return list == null ? NotFound() : Ok(list);
     }
 
@@ -78,7 +92,7 @@ public class ListsController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<ActionResult> ReplaceListAsync([FromRoute] string id, [FromBody] CreateUpdateTodoList list, CancellationToken cancellationToken = default)
     {
-        var existinglist = await listsRepository.GetEntityAsync(id, cancellationToken);
+        var existinglist = await GetListByIdAsync(id, cancellationToken);
         if (existinglist == null)
         {
             return NotFound();
@@ -87,8 +101,9 @@ public class ListsController : ControllerBase
         existinglist.Name = list.Name;
         existinglist.Description = list.Description;
 
-        var savedlist = await listsRepository.SaveEntityAsync(existinglist, cancellationToken);
-        return Ok(savedlist);
+        var entity = dbContext.Update(existinglist);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(entity.Entity);
     }
 
     [HttpDelete("{id}")]
@@ -96,23 +111,13 @@ public class ListsController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<ActionResult> DeleteListAsync([FromRoute] string id, CancellationToken cancellationToken = default)
     {
-        var existinglist = await listsRepository.GetEntityAsync(id, cancellationToken);
+        var existinglist = await GetListByIdAsync(id, cancellationToken);
         if (existinglist == null)
         {
             return NotFound();
         }
-
-        // Step 1 - find all items that are in this list, and delete them.
-        var itemsInList = itemsRepository.AsQueryable().Where(item => item.ListId == existinglist.Id).ToList();
-        foreach (var item in itemsInList)
-        {
-            await itemsRepository.DeleteEntityAsync(item.Id!, cancellationToken);
-        }
-
-        // Step 2 - delete the list.
-        await listsRepository.DeleteEntityAsync(id, cancellationToken);
-
-        // Return 204 No Content
+        dbContext.TodoLists.Remove(existinglist);
+        await dbContext.SaveChangesAsync(cancellationToken);
         return NoContent();
     }
 
@@ -120,14 +125,15 @@ public class ListsController : ControllerBase
     [Produces("application/json")]
     [ProducesResponseType(200, Type = typeof(Page<TodoItem>))]
     [ProducesResponseType(404)]
-    public async Task<ActionResult<Page<TodoItem>>> GetListItemsAsync([FromRoute] string id, [FromQuery(Name = "$skip")] int? skip = null, [FromQuery(Name = "$top")] int? batchSize = null, CancellationToken cancellationToken = default)
+    public Task<ActionResult<Page<TodoItem>>> GetListItemsAsync([FromRoute] string id, [FromQuery(Name = "$skip")] int? skip = null, [FromQuery(Name = "$top")] int? batchSize = null, CancellationToken cancellationToken = default)
     {
-        var list = await listsRepository.GetEntityAsync(id, cancellationToken);
-        if (list == null)
-        {
-            return NotFound();
-        }
-        return Ok(Utils.PagedResponse<TodoItem>(itemsRepository.AsQueryable().Where(item => item.ListId == id), skip, batchSize, GetBaseUri()));
+        throw new NotImplementedException();
+        //var list = await listsRepository.GetEntityAsync(id, cancellationToken);
+        //if (list == null)
+        //{
+        //    return NotFound();
+        //}
+        //return Ok(Utils.PagedResponse<TodoItem>(itemsRepository.AsQueryable().Where(item => item.ListId == id), skip, batchSize, GetBaseUri()));
     }
 
     [HttpPost("{id}/items")]
@@ -136,28 +142,29 @@ public class ListsController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<ActionResult<TodoItem>> CreateListItemAsync([FromRoute] string id, [FromBody] CreateUpdateTodoItem item, CancellationToken cancellationToken = default)
     {
-        var list = await listsRepository.GetEntityAsync(id, cancellationToken);
-        if (list == null)
-        {
-            return NotFound();
-        }
+        throw new NotImplementedException();
+        //var list = await listsRepository.GetEntityAsync(id, cancellationToken);
+        //if (list == null)
+        //{
+        //    return NotFound();
+        //}
 
-        var newitem = new TodoItem(id, item.Name) { Description = item.Description };
-        if (string.IsNullOrEmpty(item.State))
-        {
-            newitem.State = TodoItemState.Todo;
-        }
-        else if (Utils.ParseState(item.State, out TodoItemState state))
-        {
-            newitem.State = state;
-        }
-        else
-        {
-            return BadRequest();
-        }
+        //var newitem = new TodoItem(id, item.Name) { Description = item.Description };
+        //if (string.IsNullOrEmpty(item.State))
+        //{
+        //    newitem.State = TodoItemState.Todo;
+        //}
+        //else if (Utils.ParseState(item.State, out TodoItemState state))
+        //{
+        //    newitem.State = state;
+        //}
+        //else
+        //{
+        //    return BadRequest();
+        //}
 
-        var saveditem = await itemsRepository.SaveEntityAsync(newitem, cancellationToken);
-        return CreatedAtAction(nameof(GetListItemAsync), new { id, item_id = saveditem.Id }, saveditem);
+        //var saveditem = await itemsRepository.SaveEntityAsync(newitem, cancellationToken);
+        //return CreatedAtAction(nameof(GetListItemAsync), new { id, item_id = saveditem.Id }, saveditem);
     }
 
     [HttpGet("{id}/items/{item_id}")]
@@ -165,76 +172,80 @@ public class ListsController : ControllerBase
     [ProducesResponseType(200, Type = typeof(TodoItem))]
     [ProducesResponseType(404)]
     [ActionName(nameof(GetListItemAsync))]
-    public async Task<ActionResult<TodoItem>> GetListItemAsync([FromRoute] string id, [FromRoute] string item_id, CancellationToken cancellationToken = default)
+    public Task<ActionResult<TodoItem>> GetListItemAsync([FromRoute] string id, [FromRoute] string item_id, CancellationToken cancellationToken = default)
     {
-        var list = await listsRepository.GetEntityAsync(id, cancellationToken);
-        if (list == null)
-        {
-            return NotFound();
-        }
-        var item = await itemsRepository.GetEntityAsync(item_id, cancellationToken);
-        return (item == null || item.ListId != id) ? NotFound() : Ok(item);
+        throw new NotImplementedException();
+        //var list = await listsRepository.GetEntityAsync(id, cancellationToken);
+        //if (list == null)
+        //{
+        //    return NotFound();
+        //}
+        //var item = await itemsRepository.GetEntityAsync(item_id, cancellationToken);
+        //return (item == null || item.ListId != id) ? NotFound() : Ok(item);
     }
 
     [HttpPut("{id}/items/{item_id}")]
     [Produces("application/json")]
     [ProducesResponseType(200, Type = typeof(TodoItem))]
     [ProducesResponseType(404)]
-    public async Task<ActionResult<TodoItem>> UpdateListItemAsync([FromRoute] string id, [FromRoute] string item_id, [FromBody] CreateUpdateTodoItem item, CancellationToken cancellationToken = default)
+    public Task<ActionResult<TodoItem>> UpdateListItemAsync([FromRoute] string id, [FromRoute] string item_id, [FromBody] CreateUpdateTodoItem item, CancellationToken cancellationToken = default)
     {
-        var existingitem = await itemsRepository.GetEntityAsync(item_id, cancellationToken);
-        if (existingitem == null || existingitem.ListId != id)
-        {
-            return NotFound();
-        }
+        throw new NotImplementedException();
+        //var existingitem = await itemsRepository.GetEntityAsync(item_id, cancellationToken);
+        //if (existingitem == null || existingitem.ListId != id)
+        //{
+        //    return NotFound();
+        //}
 
-        existingitem.Name = item.Name;
-        existingitem.Description = item.Description;
-        existingitem.CompletedDate = item.CompletedDate;
-        existingitem.DueDate = item.DueDate;
-        if (!string.IsNullOrEmpty(item.State) && Utils.ParseState(item.State, out TodoItemState state))
-        {
-            existingitem.State = state;
-        }
-        else
-        {
-            return BadRequest();
-        }
+        //existingitem.Name = item.Name;
+        //existingitem.Description = item.Description;
+        //existingitem.CompletedDate = item.CompletedDate;
+        //existingitem.DueDate = item.DueDate;
+        //if (!string.IsNullOrEmpty(item.State) && Utils.ParseState(item.State, out TodoItemState state))
+        //{
+        //    existingitem.State = state;
+        //}
+        //else
+        //{
+        //    return BadRequest();
+        //}
 
-        var saveditem = await itemsRepository.SaveEntityAsync(existingitem, cancellationToken);
-        return Ok(saveditem);
+        //var saveditem = await itemsRepository.SaveEntityAsync(existingitem, cancellationToken);
+        //return Ok(saveditem);
     }
 
     [HttpDelete("{id}/items/{item_id}")]
     [ProducesResponseType(204)]
     [ProducesResponseType(404)]
-    public async Task<ActionResult> DeleteListItemAsync([FromRoute] string id, [FromRoute] string item_id, CancellationToken cancellationToken = default)
+    public Task<ActionResult> DeleteListItemAsync([FromRoute] string id, [FromRoute] string item_id, CancellationToken cancellationToken = default)
     {
-        var existingitem = await itemsRepository.GetEntityAsync(item_id, cancellationToken);
-        if (existingitem == null || existingitem.ListId != id)
-        {
-            return NotFound();
-        }
+        throw new NotImplementedException();
+        //var existingitem = await itemsRepository.GetEntityAsync(item_id, cancellationToken);
+        //if (existingitem == null || existingitem.ListId != id)
+        //{
+        //    return NotFound();
+        //}
 
-        await itemsRepository.DeleteEntityAsync(item_id, cancellationToken);
-        return NoContent();
+        //await itemsRepository.DeleteEntityAsync(item_id, cancellationToken);
+        //return NoContent();
     }
 
     [HttpGet("{id}/state/{state}")]
     [Produces("application/json")]
     [ProducesResponseType(200, Type = typeof(Page<TodoItem>))]
     [ProducesResponseType(404)]
-    public async Task<ActionResult<Page<TodoItem>>> GetListItemsByStateAsync([FromRoute] string id, [FromRoute] string state, [FromQuery(Name = "$skip")] int? skip = null, [FromQuery(Name = "$top")] int? batchSize = null, CancellationToken cancellationToken = default)
+    public Task<ActionResult<Page<TodoItem>>> GetListItemsByStateAsync([FromRoute] string id, [FromRoute] string state, [FromQuery(Name = "$skip")] int? skip = null, [FromQuery(Name = "$top")] int? batchSize = null, CancellationToken cancellationToken = default)
     {
-        if (!Utils.ParseState(state, out TodoItemState parsedState))
-        {
-            return BadRequest();
-        }
-        var list = await listsRepository.GetEntityAsync(id, cancellationToken);
-        if (list == null)
-        {
-            return NotFound();
-        }
-        return Ok(Utils.PagedResponse<TodoItem>(itemsRepository.AsQueryable().Where(item => item.ListId == id && item.State == parsedState), skip, batchSize, GetBaseUri()));
+        throw new NotImplementedException();
+        //if (!Utils.ParseState(state, out TodoItemState parsedState))
+        //{
+        //    return BadRequest();
+        //}
+        //var list = await listsRepository.GetEntityAsync(id, cancellationToken);
+        //if (list == null)
+        //{
+        //    return NotFound();
+        //}
+        //return Ok(Utils.PagedResponse<TodoItem>(itemsRepository.AsQueryable().Where(item => item.ListId == id && item.State == parsedState), skip, batchSize, GetBaseUri()));
     }
 }

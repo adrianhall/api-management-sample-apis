@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All Rights Reserved.
 // Licensed under the MIT License.
 
-using Todo.Data.Models;
+using Microsoft.EntityFrameworkCore;
+using Todo.Data;
 using Todo.RestApi.DataTransferObjects;
 
 namespace Todo.RestApi.Extensions;
@@ -33,6 +34,25 @@ public static class Utils
     }
 
     /// <summary>
+    /// Determine if skip and top are valid.
+    /// </summary>
+    /// <param name="skip"></param>
+    /// <param name="batchSize"></param>
+    /// <returns></returns>
+    public static bool ValidateSkipTop(int? skip, int? batchSize)
+    {
+        if (skip.HasValue && skip.Value < 0)
+        {
+            return false;
+        }
+        if (batchSize.HasValue && (batchSize.Value < 1 || batchSize > MaxBatchSize))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    /// <summary>
     /// Returns a paged response.
     /// </summary>
     /// <typeparam name="T">The type of item in the response.</typeparam>
@@ -41,11 +61,11 @@ public static class Utils
     /// <param name="batchSize">The $top value.</param>
     /// <param name="baseUri">The base URI of the request.</param>
     /// <returns></returns>
-    public static Page<T> PagedResponse<T>(IQueryable<T> queryable, int? skip, int? batchSize, string baseUri) where T : TodoBaseModel
+    public static Page<T> PagedResponse<T>(DbSet<T> dbset, int? skip, int? batchSize, string baseUri) where T : TodoBaseModel
     {
-        int totalCount = queryable.Count();
+        int totalCount = dbset.AsQueryable().Count();
         int skipValue = skip ?? 0;
-        var items = queryable.OrderBy(item => item.CreatedDate).Skip(skipValue).Take(GetBatchSize(batchSize)).ToList();
+        var items = dbset.AsQueryable().OrderBy(item => item.CreatedDate).Skip(skipValue).Take(GetBatchSize(batchSize)).ToList();
         bool hasMoreitems = skipValue + items.Count < totalCount;
         Uri? nextLink = !hasMoreitems ? null : new Uri($"{baseUri}?$skip={skipValue + items.Count}&$top={GetBatchSize(batchSize)}");
         return new Page<T>

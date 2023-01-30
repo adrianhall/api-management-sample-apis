@@ -1,13 +1,10 @@
 // Copyright (c) Microsoft Corporation. All Rights Reserved.
 // Licensed under the MIT License.
 
-using Azure.Identity;
-using Microsoft.Azure.Cosmos;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Todo.Data;
-using Todo.Data.Models;
-using Todo.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,42 +32,17 @@ builder.Services.AddCors(options =>
 });
 
 /*
-** Cosmos Client
+** Entity Framework Core Setup.
 */
-var cosmosEndpoint = builder.Configuration["AZURE_COSMOS_ENDPOINT"];
-var cosmosDatabaseName = builder.Configuration["AZURE_COSMOS_DATABASE_NAME"];
-bool cosmosIsConfigured = false;
-if (!string.IsNullOrEmpty(cosmosEndpoint) && !string.IsNullOrEmpty(cosmosDatabaseName))
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (connectionString == null)
 {
-    var credential = new ChainedTokenCredential(new AzureDeveloperCliCredential(), new DefaultAzureCredential());
-    var cosmosClient = new CosmosClient(cosmosEndpoint, credential, new CosmosClientOptions {
-       EnableContentResponseOnWrite = true,
-       SerializerOptions = new CosmosSerializationOptions 
-       {
-            PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
-       } 
-    });
-
-    var cosmosDatabase = cosmosClient.GetDatabase(cosmosDatabaseName);
-
-    builder.Services.AddSingleton(cosmosClient);
-    builder.Services.AddSingleton(cosmosDatabase);
-    cosmosIsConfigured = true;
+    throw new ApplicationException("DefaultConnection is not set");
 }
-
-/*
-** Repositories.
-*/
-if (cosmosIsConfigured)
+builder.Services.AddDbContext<TodoDbContext>(options =>
 {
-    builder.Services.AddSingleton<ITodoRepository<TodoItem>, CosmosRepository<TodoItem>>();
-    builder.Services.AddSingleton<ITodoRepository<TodoList>, CosmosRepository<TodoList>>();
-}
-else
-{
-    builder.Services.AddSingleton<ITodoRepository<TodoItem>, InMemoryRepository<TodoItem>>();
-    builder.Services.AddSingleton<ITodoRepository<TodoList>, InMemoryRepository<TodoList>>();
-}
+    options.UseSqlServer(connectionString);
+});
 
 /*
 ** Controllers.
