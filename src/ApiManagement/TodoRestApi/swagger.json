@@ -34,7 +34,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TodoListPage"
+                                    "$ref": "#/components/schemas/TodoListDtoPage"
                                 }
                             }
                         }
@@ -70,7 +70,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TodoList"
+                                    "$ref": "#/components/schemas/TodoListDto"
                                 }
                             }
                         }
@@ -78,14 +78,14 @@
                 }
             }
         },
-        "/todo/lists/{id}": {
+        "/todo/lists/{list_id}": {
             "get": {
                 "tags": [
                     "Lists"
                 ],
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "list_id",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -99,7 +99,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TodoList"
+                                    "$ref": "#/components/schemas/TodoListDto"
                                 }
                             }
                         }
@@ -122,7 +122,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "list_id",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -155,7 +155,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TodoList"
+                                    "$ref": "#/components/schemas/TodoListDto"
                                 }
                             }
                         }
@@ -178,7 +178,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "list_id",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -213,14 +213,14 @@
                 }
             }
         },
-        "/todo/lists/{id}/items": {
+        "/todo/lists/{list_id}/items": {
             "get": {
                 "tags": [
                     "Lists"
                 ],
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "list_id",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -250,7 +250,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TodoItemPage"
+                                    "$ref": "#/components/schemas/TodoItemDtoPage"
                                 }
                             }
                         }
@@ -273,7 +273,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "list_id",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -306,7 +306,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TodoItem"
+                                    "$ref": "#/components/schemas/TodoItemDto"
                                 }
                             }
                         }
@@ -324,14 +324,14 @@
                 }
             }
         },
-        "/todo/lists/{id}/items/{item_id}": {
+        "/todo/lists/{list_id}/items/{item_id}": {
             "get": {
                 "tags": [
                     "Lists"
                 ],
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "list_id",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -353,7 +353,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TodoItem"
+                                    "$ref": "#/components/schemas/TodoItemDto"
                                 }
                             }
                         }
@@ -376,7 +376,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "list_id",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -417,7 +417,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TodoItem"
+                                    "$ref": "#/components/schemas/TodoItemDto"
                                 }
                             }
                         }
@@ -440,7 +440,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "list_id",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -483,14 +483,14 @@
                 }
             }
         },
-        "/todo/lists/{id}/state/{state}": {
+        "/todo/lists/{list_id}/state/{state}": {
             "get": {
                 "tags": [
                     "Lists"
                 ],
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "list_id",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -528,7 +528,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/TodoItemPage"
+                                    "$ref": "#/components/schemas/TodoItemDtoPage"
                                 }
                             }
                         }
@@ -618,29 +618,28 @@
                 },
                 "additionalProperties": {}
             },
-            "TodoItem": {
+            "TodoItemDto": {
+                "required": [
+                    "createdDate",
+                    "id",
+                    "listId",
+                    "name",
+                    "state",
+                    "updatedDate"
+                ],
                 "type": "object",
                 "properties": {
                     "id": {
                         "type": "string",
-                        "nullable": true
-                    },
-                    "createdDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updatedDate": {
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
+                        "format": "uuid"
                     },
                     "listId": {
                         "type": "string",
-                        "nullable": true
+                        "format": "uuid"
                     },
                     "name": {
-                        "type": "string",
-                        "nullable": true
+                        "minLength": 1,
+                        "type": "string"
                     },
                     "description": {
                         "type": "string",
@@ -658,17 +657,25 @@
                         "type": "string",
                         "format": "date-time",
                         "nullable": true
+                    },
+                    "createdDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedDate": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "additionalProperties": false
             },
-            "TodoItemPage": {
+            "TodoItemDtoPage": {
                 "type": "object",
                 "properties": {
                     "items": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/TodoItem"
+                            "$ref": "#/components/schemas/TodoItemDto"
                         },
                         "nullable": true
                     },
@@ -691,10 +698,24 @@
                 ],
                 "type": "string"
             },
-            "TodoList": {
+            "TodoListDto": {
+                "required": [
+                    "createdDate",
+                    "id",
+                    "name",
+                    "updatedDate"
+                ],
                 "type": "object",
                 "properties": {
                     "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "description": {
                         "type": "string",
                         "nullable": true
                     },
@@ -704,27 +725,18 @@
                     },
                     "updatedDate": {
                         "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "name": {
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "description": {
-                        "type": "string",
-                        "nullable": true
+                        "format": "date-time"
                     }
                 },
                 "additionalProperties": false
             },
-            "TodoListPage": {
+            "TodoListDtoPage": {
                 "type": "object",
                 "properties": {
                     "items": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/TodoList"
+                            "$ref": "#/components/schemas/TodoListDto"
                         },
                         "nullable": true
                     },

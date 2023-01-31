@@ -2,6 +2,7 @@ param name string
 param location string
 param tags object = {}
 param appSettings object = {}
+param connectionStrings object = {}
 
 param applicationInsightsName string = ''
 param appServicePlanId string
@@ -18,6 +19,7 @@ module apiService '../core/host/appservice.bicep' = {
     applicationInsightsName: applicationInsightsName
     appServicePlanId: appServicePlanId
     appSettings: appSettings
+    connectionStrings: connectionStrings
     runtimeName: 'dotnetcore'
     runtimeVersion: '6.0'
     scmDoBuildDuringDeployment: false

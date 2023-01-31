@@ -17,6 +17,7 @@ param allowedOrigins array = []
 param alwaysOn bool = true
 param appCommandLine string = ''
 param appSettings object = {}
+param connectionStrings object = {}
 param clientAffinityEnabled bool = false
 param enableOryxBuild bool = contains(kind, 'linux')
 param functionAppScaleLimit int = -1
@@ -61,6 +62,11 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
         ENABLE_ORYX_BUILD: string(enableOryxBuild)
       },
       !empty(applicationInsightsName) ? { APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.properties.ConnectionString } : {})
+  }
+
+  resource configConnectionStrings 'config' = {
+    name: 'connectionstrings'
+    properties: connectionStrings
   }
 
   resource configLogs 'config' = {
