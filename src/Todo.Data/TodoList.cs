@@ -12,5 +12,5 @@ public class TodoList : TodoBaseModel
     /// <summary>
     /// The list of items in the dataset.
     /// </summary>
-    public List<TodoItem> Items { get; set; } = new List<TodoItem>();
+    public List<TodoItem>? Items { get; set; }
 }

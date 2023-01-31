@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Todo.Data;
+using Todo.RestApi.DataTransferObjects;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,12 +46,18 @@ builder.Services.AddDbContext<TodoDbContext>(options =>
 });
 
 /*
+** Automapper
+*/
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+/*
 ** Controllers.
 */
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.WriteIndented = true;
+    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, true));
 });
 
@@ -65,6 +72,18 @@ builder.Services.AddSwaggerGen();
 ** Configure the HTTP Pipeline.
 */
 var app = builder.Build();
+
+/*
+** Database Initialization
+*/
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<TodoDbContext>();
+    if (context is IDatabaseInitializer initializer)
+    {
+        await initializer.InitializeDatabaseAsync();
+    }
+}
 
 /*
 ** CORS

@@ -18,15 +18,22 @@ public class TodoDbContext : DbContext, IDatabaseInitializer
     {
     }
 
+    /// <summary>
+    /// Create the model for the database.
+    /// </summary>
+    /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ConfigureModel<TodoItem>();
+        modelBuilder.ConfigureModel<TodoList>();
 
         modelBuilder.Entity<TodoItem>()
             .HasOne(m => m.List)
             .WithMany(m => m.Items)
             .HasForeignKey(m => m.ListId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        base.OnModelCreating(modelBuilder);
     }
 
     /// <summary>
@@ -56,6 +63,5 @@ internal static class ModelBuilderExtensions
     {
         modelBuilder.Entity<T>().HasKey(m => m.Id);
         modelBuilder.Entity<T>().Property(m => m.CreatedDate).ValueGeneratedOnAdd();
-        modelBuilder.Entity<T>().Property(m => m.UpdatedDate).ValueGeneratedOnAddOrUpdate();
     }
 }

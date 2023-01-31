@@ -53,30 +53,6 @@ public static class Utils
     }
 
     /// <summary>
-    /// Returns a paged response.
-    /// </summary>
-    /// <typeparam name="T">The type of item in the response.</typeparam>
-    /// <param name="queryable">The queryable to obtain the list of items.</param>
-    /// <param name="skip">The $skip value.</param>
-    /// <param name="batchSize">The $top value.</param>
-    /// <param name="baseUri">The base URI of the request.</param>
-    /// <returns></returns>
-    public static Page<T> PagedResponse<T>(DbSet<T> dbset, int? skip, int? batchSize, string baseUri) where T : TodoBaseModel
-    {
-        int totalCount = dbset.AsQueryable().Count();
-        int skipValue = skip ?? 0;
-        var items = dbset.AsQueryable().OrderBy(item => item.CreatedDate).Skip(skipValue).Take(GetBatchSize(batchSize)).ToList();
-        bool hasMoreitems = skipValue + items.Count < totalCount;
-        Uri? nextLink = !hasMoreitems ? null : new Uri($"{baseUri}?$skip={skipValue + items.Count}&$top={GetBatchSize(batchSize)}");
-        return new Page<T>
-        {
-            Items = items,
-            HasMoreItems = hasMoreitems,
-            NextLink = nextLink
-        };
-    }
-
-    /// <summary>
     /// Converts a State string into a TodoItemState.
     /// </summary>
     /// <param name="input"></param>
@@ -89,17 +65,12 @@ public static class Utils
         {
             return true;
         }
-        if (input.Equals("inprogress", StringComparison.OrdinalIgnoreCase))
+        else if (input.Equals("inprogress", StringComparison.OrdinalIgnoreCase) || input.Equals("in_progress", StringComparison.OrdinalIgnoreCase))
         {
             state = TodoItemState.InProgress;
             return true;
         }
-        if (input.Equals("in_progress", StringComparison.OrdinalIgnoreCase))
-        {
-            state = TodoItemState.InProgress;
-            return true;
-        }
-        if (input.Equals("done", StringComparison.OrdinalIgnoreCase))
+        else if (input.Equals("done", StringComparison.OrdinalIgnoreCase))
         {
             state = TodoItemState.Done;
             return true;
