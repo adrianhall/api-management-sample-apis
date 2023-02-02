@@ -46,6 +46,7 @@ param resourceGroupName string = ''
 // Underlying API Service Names
 param starwarsRestServiceName string = ''
 param todoRestServiceName string = ''
+param todoGraphQLServiceName string = ''
 
 // API Management instance
 param apiManagementServiceName string = ''
@@ -146,7 +147,7 @@ module starWarsRestApiService './app/starwars-rest-api.bicep' = {
 }
 
 // ---------------------------------------------------------------------------------------------
-//  API: Star Wars REST
+//  API: Todo REST
 // ---------------------------------------------------------------------------------------------
 module todoRestApiService './app/todo-rest-api.bicep' = {
   name: 'todo-rest-api-service'
@@ -155,6 +156,29 @@ module todoRestApiService './app/todo-rest-api.bicep' = {
     name: !empty(todoRestServiceName) ? todoRestServiceName : 'todo-rest-${resourceToken}'
     location: location
     tags: union(tags, { 'azd-service-name': 'todo-rest' })
+    applicationInsightsName: monitoring.outputs.applicationInsightsName
+    connectionStrings: {
+      DefaultConnection: {
+        type: 'SQLAzure'
+        value: '${database.outputs.connectionString}; Password=${sqlAdminPassword}'
+      }
+    }
+    appServicePlanId: appServicePlan.outputs.id
+    apiManagementServiceName: apiManagement.outputs.serviceName
+    apiManagementLoggerName: apiManagement.outputs.loggerName
+  }
+}
+
+// ---------------------------------------------------------------------------------------------
+//  API: Todo GraphQL
+// ---------------------------------------------------------------------------------------------
+module todoGraphQLApiService './app/todo-graphql-api.bicep' = {
+  name: 'todo-graphql-api-service'
+  scope: rg
+  params: {
+    name: !empty(todoGraphQLServiceName) ? todoGraphQLServiceName : 'todo-graphql-${resourceToken}'
+    location: location
+    tags: union(tags, { 'azd-service-name': 'todo-graphql' })
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     connectionStrings: {
       DefaultConnection: {
@@ -181,3 +205,4 @@ output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 output STARWARS_REST_GATEWAY_URI string = starWarsRestApiService.outputs.gatewayUri
 output TODO_REST_GATEWAY_URI string = todoRestApiService.outputs.gatewayUri
+output TODO_GRAPHQL_GATEWAY_URI string = todoGraphQLApiService.outputs.gatewayUri

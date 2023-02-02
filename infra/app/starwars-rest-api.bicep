@@ -6,6 +6,7 @@ param applicationInsightsName string = ''
 param appServicePlanId string
 param apiManagementServiceName string = ''
 param apiManagementLoggerName string = ''
+param path string = 'starwars-rest'
 
 module apiService '../core/host/appservice.bicep' = {
   name: name
@@ -29,7 +30,7 @@ module restApiDefinition '../core/gateway/rest-api.bicep' = if (!empty(apiManage
     name: 'starwars-rest'
     apimServiceName: apiManagementServiceName
     apimLoggerName: apiManagementLoggerName
-    path: 'starwars-rest'
+    path: path
     serviceUrl: apiService.outputs.uri
     policy: loadTextContent('../../src/ApiManagement/StarWarsRestApi/policy.xml')
     definition: loadTextContent('../../src/ApiManagement/StarWarsRestApi/swagger.json')

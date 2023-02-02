@@ -8,7 +8,7 @@ param applicationInsightsName string = ''
 param appServicePlanId string
 param apiManagementServiceName string = ''
 param apiManagementLoggerName string = ''
-param path string = 'todo-rest'
+param path string = 'todo-graphql'
 
 module apiService '../core/host/appservice.bicep' = {
   name: name
@@ -28,19 +28,19 @@ module apiService '../core/host/appservice.bicep' = {
   }
 }
 
-module restApiDefinition '../core/gateway/rest-api.bicep' = if (!empty(apiManagementServiceName)) {
-  name: 'todo-rest-api-definition'
+module graphqlApiDefinition '../core/gateway/graphql-api.bicep' = if (!empty(apiManagementServiceName)) {
+  name: 'todo-graphql-api-definition'
   params: {
-    name: 'todo-rest'
+    name: 'todo-graphql'
     apimServiceName: apiManagementServiceName
     apimLoggerName: apiManagementLoggerName
     path: path
     serviceUrl: apiService.outputs.uri
-    policy: loadTextContent('../../src/ApiManagement/TodoRestApi/policy.xml')
-    definition: loadTextContent('../../src/ApiManagement/TodoRestApi/swagger.json')
+    policy: loadTextContent('../../src/ApiManagement/TodoGraphQLApi/policy.xml')
+    schema: loadTextContent('../../src/ApiManagement/TodoGraphQLApi/schema.graphql')
   }
 }
 
 output serviceUri string = apiService.outputs.uri
-output gatewayUri string = restApiDefinition.outputs.serviceUrl
+output gatewayUri string = graphqlApiDefinition.outputs.serviceUrl
 output servicePrincipalId string = apiService.outputs.servicePrincipalId
