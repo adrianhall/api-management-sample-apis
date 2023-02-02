@@ -8,6 +8,7 @@ namespace Todo.GraphQLApi.GraphQL;
 [ExtendObjectType<TodoList>]
 public class TodoListNode
 {
+    [BindMember(nameof(TodoList.Items))]
     [UsePaging]
     [UseFiltering]
     [UseSorting]
