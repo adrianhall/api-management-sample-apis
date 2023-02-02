@@ -45,7 +45,7 @@ resource graphqlApi 'Microsoft.ApiManagement/service/apis@2022-04-01-preview' = 
     path: path
     apiType: 'graphql'
     displayName: name
-    protocols: [ 'https+wss' ]
+    protocols: [ 'https', 'wss' ]
     serviceUrl: serviceUrl
     subscriptionRequired: false
     type: 'graphql'

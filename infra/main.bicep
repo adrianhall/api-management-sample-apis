@@ -41,6 +41,7 @@ param appServicePlanName string = ''
 param sqlServerName string = ''
 param sqlDatabaseName string = ''
 param logAnalyticsName string = ''
+param redisCacheServiceName string = ''
 param resourceGroupName string = ''
 
 // Underlying API Service Names
@@ -115,6 +116,21 @@ module appServicePlan './core/host/appserviceplan.bicep' = {
 }
 
 // ---------------------------------------------------------------------------------------------
+//  Redis Cache
+// ---------------------------------------------------------------------------------------------
+module redisCache './core/cache/redis.bicep' = {
+  name: 'redis-cache'
+  scope: rg
+  params: {
+    name: !empty(redisCacheServiceName) ? redisCacheServiceName : '${abbrs.cacheRedis}${resourceToken}'
+    location: location
+    tags: tags
+    sku: 'Basic'
+    capacity: 1
+  }
+}
+
+// ---------------------------------------------------------------------------------------------
 //  API Management Service
 // ---------------------------------------------------------------------------------------------
 module apiManagement './core/gateway/api-management.bicep' = {
@@ -126,6 +142,7 @@ module apiManagement './core/gateway/api-management.bicep' = {
     tags: tags
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     sku: 'Developer'
+    redisCacheServiceName: redisCache.outputs.cacheName
   }
 }
 

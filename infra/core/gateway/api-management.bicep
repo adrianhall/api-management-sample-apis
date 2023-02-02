@@ -29,6 +29,9 @@ param skuCount int = 0
 @description('Azure Application Insights Name')
 param applicationInsightsName string
 
+@description('Azure Cache for Redis Service Name')
+param redisCacheServiceName string = ''
+
 resource apimService 'Microsoft.ApiManagement/service@2022-04-01-preview' = {
   name: name
   location: location
@@ -57,6 +60,16 @@ resource apimLogger 'Microsoft.ApiManagement/service/loggers@2021-12-01-preview'
   }
 }
 
+resource apimCache 'Microsoft.ApiManagement/service/caches@2022-04-01-preview' = if (!empty(redisCacheServiceName)) {
+  name: 'redis-cache'
+  parent: apimService
+  properties: {
+    connectionString: '${redisCache.properties.hostName},password=${redisCache.listKeys().primaryKey},ssl=True,abortConnect=False'
+    useFromLocation: 'default'
+    description: redisCache.properties.hostName
+  }
+}
+
 resource apimNamedValue 'Microsoft.ApiManagement/service/namedValues@2022-04-01-preview' = [for nv in namedValues: {
   name: nv.key
   parent: apimService
@@ -69,6 +82,10 @@ resource apimNamedValue 'Microsoft.ApiManagement/service/namedValues@2022-04-01-
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = if (!empty(applicationInsightsName)) {
   name: applicationInsightsName
+}
+
+resource redisCache 'Microsoft.Cache/redis@2022-06-01' existing = if (!empty(redisCacheServiceName)) {
+  name: redisCacheServiceName
 }
 
 output serviceName string = apimService.name

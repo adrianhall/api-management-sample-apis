@@ -12,4 +12,8 @@ services:
     project: ./src/Todo.RestApi
     language: csharp
     host: appservice
+  todo-graphql:
+    project: ./src/Todo.GraphQLApi
+    language: csharp
+    host: appservice
     
