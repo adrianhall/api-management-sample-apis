@@ -2,20 +2,16 @@
 // Licensed under the MIT License.
 
 using Todo.Data;
+using Todo.GraphQLApi.GraphQL.Services;
 
 namespace Todo.GraphQLApi.GraphQL;
 
-[ExtendObjectType<TodoList>]
+[ExtendObjectType<DTO.TodoList>]
 public class TodoListNode
 {
-    [BindMember(nameof(TodoList.Items))]
     [UsePaging]
     [UseFiltering]
     [UseSorting]
-    public static IQueryable<TodoItem> GetItems(TodoDbContext context, [Parent] TodoList list, TodoItemState? state)
-    {
-        return state != null
-            ? context.TodoItems.Where(i => i.ListId == list.Id && i.State == state)
-            : context.TodoItems.Where(i => i.ListId == list.Id);
-    }
+    public static IQueryable<DTO.TodoItem> GetItems(TodoDataService service, [Parent] DTO.TodoList list, TodoItemState? state)
+        => service.GetTodoItems(list.Id, state);
 }

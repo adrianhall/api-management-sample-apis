@@ -1,7 +1,8 @@
-﻿
+﻿// Copyright (c) Microsoft Corporation. All Rights Reserved.
+// Licensed under the MIT License.
 
 using HotChocolate.Types.Pagination;
-using Todo.Data;
+using Todo.GraphQLApi.GraphQL.Services;
 
 namespace Todo.GraphQLApi.GraphQL;
 
@@ -16,13 +17,12 @@ public static class GraphQLExtensions
         var pagingOptions = new PagingOptions { MaxPageSize = 100, DefaultPageSize = 50 };
 
         services.AddGraphQLServer()
-            .RegisterDbContext<TodoDbContext>(DbContextKind.Resolver)
+            .RegisterService<TodoDataService>()
             .AddTypes()
             .AddMutationConventions()
             .AddGlobalObjectIdentification()
             .SetPagingOptions(pagingOptions)
             .AddFiltering()
             .AddSorting();
-
     }
 }

@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All Rights Reserved.
 // Licensed under the MIT License.
 
-using Microsoft.EntityFrameworkCore;
-using Todo.Data;
+using Todo.GraphQLApi.GraphQL.Services;
 
 namespace Todo.GraphQLApi.GraphQL;
 
@@ -10,16 +9,16 @@ namespace Todo.GraphQLApi.GraphQL;
 public static class Query
 {
     [NodeResolver]
-    public static Task<TodoItem?> GetTodoItemByIdAsync(TodoDbContext context, Guid id, CancellationToken cancellationToken = default)
-        => context.TodoItems.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+    public static Task<DTO.TodoItem?> GetTodoItemByIdAsync(TodoDataService service, Guid id, CancellationToken cancellationToken = default)
+        => service.GetTodoItemByIdAsync(id, cancellationToken);
 
     [NodeResolver]
-    public static Task<TodoList?> GetTodoListByIdAsync(TodoDbContext context, Guid id, CancellationToken cancellationToken = default)
-        => context.TodoLists.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+    public static Task<DTO.TodoList?> GetTodoListByIdAsync(TodoDataService service, Guid id, CancellationToken cancellationToken = default)
+        => service.GetTodoListByIdAsync(id, cancellationToken);
 
     [UsePaging]
     [UseFiltering]
     [UseSorting]
-    public static IQueryable<TodoList> GetTodoLists(TodoDbContext context)
-        => context.TodoLists.AsQueryable();
+    public static IQueryable<DTO.TodoList> GetTodoLists(TodoDataService service)
+        => service.GetTodoLists();
 }

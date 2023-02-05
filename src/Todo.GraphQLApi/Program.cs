@@ -38,10 +38,11 @@ if (connectionString == null)
 {
     throw new ApplicationException("DefaultConnection is not set");
 }
-builder.Services.AddDbContext<TodoDbContext>(options =>
+builder.Services.AddPooledDbContextFactory<TodoDbContext>(options =>
 {
     options.UseSqlServer(connectionString);
 });
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 /*
 ** GraphQL Services
@@ -59,7 +60,8 @@ var app = builder.Build();
 */
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<TodoDbContext>();
+    var contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<TodoDbContext>>();
+    var context = contextFactory.CreateDbContext();
     if (context is IDatabaseInitializer initializer)
     {
         await initializer.InitializeDatabaseAsync();
