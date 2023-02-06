@@ -4,9 +4,9 @@
 using System.ComponentModel.DataAnnotations;
 using Todo.Data;
 
-namespace Todo.RestApi.DataTransferObjects;
+namespace Todo.RestApi.Services.DTO;
 
-public class TodoItemDto
+public class TodoItem
 {
     [Required]
     public Guid? Id { get; set; }

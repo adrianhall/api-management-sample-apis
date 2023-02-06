@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation. All Rights Reserved.
 // Licensed under the MIT License.
 
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http.Extensions;
+using System.Web;
 using Todo.Data;
-using Todo.RestApi.DataTransferObjects;
+using Todo.RestApi.Services;
 
 namespace Todo.RestApi.Extensions;
 
@@ -11,6 +12,29 @@ public static class Utils
 {
     private const int DefaultBatchSize = 20;
     private const int MaxBatchSize = 100;
+
+
+    /// <summary>
+    /// Gets this request, but without the $skip and $top parameters.
+    /// </summary>
+    /// <returns></returns>
+    public static string? GetBaseUri(HttpRequest? request)
+    {
+        if (request == null)
+        {
+            return null;
+        }
+
+        var baseUri = new UriBuilder(request.GetDisplayUrl());
+        if (request.QueryString.HasValue)
+        {
+            var query = HttpUtility.ParseQueryString(request.QueryString.Value ?? string.Empty);
+            query.Remove("$skip");
+            query.Remove("$top");
+            baseUri.Query = query.ToString();
+        }
+        return baseUri.ToString();
+    }
 
     /// <summary>
     /// Gets the appropriate batch size.
@@ -34,22 +58,18 @@ public static class Utils
     }
 
     /// <summary>
-    /// Determine if skip and top are valid.
+    /// Converts a string into a Guid, throwing <see cref="MalformedInputException"/> if the ID is invalid.
     /// </summary>
-    /// <param name="skip"></param>
-    /// <param name="batchSize"></param>
-    /// <returns></returns>
-    public static bool ValidateSkipTop(int? skip, int? batchSize)
+    /// <param name="id">The ID to transform.</param>
+    /// <returns>The transformed ID.</returns>
+    /// <exception cref="MalformedInputException">if the ID is malformed.</exception>
+    public static Guid ParseGuid(string id)
     {
-        if (skip.HasValue && skip.Value < 0)
+        if (Guid.TryParse(id, out Guid result) && result != Guid.Empty)
         {
-            return false;
+            return result;
         }
-        if (batchSize.HasValue && (batchSize.Value < 1 || batchSize > MaxBatchSize))
-        {
-            return false;
-        }
-        return true;
+        throw new MalformedInputException($"The ID \'{id}\' is not a valid GUID.");
     }
 
     /// <summary>
@@ -58,23 +78,43 @@ public static class Utils
     /// <param name="input"></param>
     /// <param name="state"></param>
     /// <returns></returns>
-    public static bool ParseState(string input, out TodoItemState state)
+    public static bool ParseState(string? input, out TodoItemState state)
     {
-        state = TodoItemState.Todo;
-        if (input.Equals("todo", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrEmpty(input) || input.Equals("todo", StringComparison.OrdinalIgnoreCase))
         {
+            state = TodoItemState.Todo;
             return true;
         }
-        else if (input.Equals("inprogress", StringComparison.OrdinalIgnoreCase) || input.Equals("in_progress", StringComparison.OrdinalIgnoreCase))
+        if (input.Equals("inprogress", StringComparison.OrdinalIgnoreCase) || input.Equals("in_progress", StringComparison.OrdinalIgnoreCase))
         {
             state = TodoItemState.InProgress;
             return true;
         }
-        else if (input.Equals("done", StringComparison.OrdinalIgnoreCase))
+        if (input.Equals("done", StringComparison.OrdinalIgnoreCase))
         {
             state = TodoItemState.Done;
             return true;
         }
+        state = TodoItemState.Todo;
         return false;
     }
+
+    /// <summary>
+    /// Determine if skip and top are valid.
+    /// </summary>
+    /// <param name="skip"></param>
+    /// <param name="batchSize"></param>
+    /// <returns></returns>
+    public static void ValidatePaging(int? skip, int? batchSize)
+    {
+        if (skip.HasValue && skip.Value < 0)
+        {
+            throw new MalformedInputException($"The value of '$skip' is invalid.");
+        }
+        if (batchSize.HasValue && (batchSize.Value < 1 || batchSize > MaxBatchSize))
+        {
+            throw new MalformedInputException($"The value of '$top' is invalid.");
+        }
+    }
+
 }

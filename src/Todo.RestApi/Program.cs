@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Todo.Data;
-using Todo.RestApi.DataTransferObjects;
+using Todo.RestApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +49,11 @@ builder.Services.AddDbContext<TodoDbContext>(options =>
 ** Automapper
 */
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+/*
+** The Data Service.
+*/
+builder.Services.AddScoped<ITodoDataService, TodoDataService>();
 
 /*
 ** Controllers.

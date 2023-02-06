@@ -1,8 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// Copyright (c) Microsoft Corporation. All Rights Reserved.
+// Licensed under the MIT License.
 
-namespace Todo.RestApi.DataTransferObjects;
+using System.ComponentModel.DataAnnotations;
 
-public class TodoListDto
+namespace Todo.RestApi.Services.DTO;
+
+public class TodoList
 {
     [Required]
     public Guid? Id { get; set; }

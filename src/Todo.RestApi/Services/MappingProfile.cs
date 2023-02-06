@@ -2,15 +2,14 @@
 // Licensed under the MIT License.
 
 using AutoMapper;
-using Todo.Data;
 
-namespace Todo.RestApi.DataTransferObjects;
+namespace Todo.RestApi.Services;
 
 public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<TodoItem, TodoItemDto>();
-        CreateMap<TodoList, TodoListDto>();
+        CreateMap<Data.TodoItem, DTO.TodoItem>();
+        CreateMap<Data.TodoList, DTO.TodoList>();
     }
 }

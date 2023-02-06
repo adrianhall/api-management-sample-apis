@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All Rights Reserved.
 // Licensed under the MIT License.
 
-namespace Todo.RestApi.DataTransferObjects;
+namespace Todo.RestApi.Models;
 
 /// <summary>
 /// A type representing a page of items.
@@ -9,6 +9,13 @@ namespace Todo.RestApi.DataTransferObjects;
 /// <typeparam name="T">The type of the items.</typeparam>
 public class Page<T>
 {
+    public Page(IEnumerable<T>? items, bool hasMoreItems, Uri? nextLink)
+    {
+        Items = items;
+        HasMoreItems = hasMoreItems;
+        NextLink = HasMoreItems ? nextLink : null;
+    }
+
     /// <summary>
     /// The list of items in this result.
     /// </summary>
