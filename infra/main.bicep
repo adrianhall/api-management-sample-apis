@@ -46,6 +46,7 @@ param resourceGroupName string = ''
 
 // Underlying API Service Names
 param starwarsRestServiceName string = ''
+param starwarsGraphQLServiceName string = ''
 param todoRestServiceName string = ''
 param todoGraphQLServiceName string = ''
 
@@ -163,6 +164,18 @@ module starWarsRestApiService './app/starwars-rest-api.bicep' = {
   }
 }
 
+// ---------------------------------------------------------------------------------------------
+//  API: Star Wars Synthetic GraphQL
+// ---------------------------------------------------------------------------------------------
+module starWarsGraphQLApiService './app/starwars-graphql-api.bicep' = {
+  name: 'starwars-graphql-api-service'
+  scope: rg
+  params: {
+    apiManagementServiceName: apiManagement.outputs.serviceName
+    apiManagementLoggerName: apiManagement.outputs.loggerName
+    serviceUri: starWarsRestApiService.outputs.serviceUri
+  }
+}
 // ---------------------------------------------------------------------------------------------
 //  API: Todo REST
 // ---------------------------------------------------------------------------------------------
