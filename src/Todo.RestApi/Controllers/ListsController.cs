@@ -82,7 +82,7 @@ public class ListsController : ControllerBase
     [HttpGet]
     [Produces("application/json")]
     [ProducesResponseType(200, Type = typeof(Page<TodoListDto>))]
-    public async Task<ActionResult<Page<TodoList>>> GetListsAsync(
+    public async Task<ActionResult<Page<TodoListDto>>> GetListsAsync(
         [FromQuery(Name = "$skip")] int? skip = null, 
         [FromQuery(Name = "$top")] int? batchSize = null,
         CancellationToken cancellationToken = default)

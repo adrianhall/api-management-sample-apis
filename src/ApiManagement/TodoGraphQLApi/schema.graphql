@@ -1,13 +1,3 @@
-"""
-The `UUID` scalar represents a globally-unique ID.
-"""
-scalar UUID
-
-"""
-The `DateTime` scalar represents an ISO-8601 compliant date time type.
-"""
-scalar DateTime
-
 type Query {
   """
   Fetches an object given its ID.
@@ -28,20 +18,8 @@ type Query {
     """
     ids: [ID!]!
   ): [Node]!
-
-  """
-  Lookup a TodoItem by its ID.
-  """
   todoItemById(id: ID!): TodoItem
-
-  """
-  Lookup a TodoList by its ID.
-  """
   todoListById(id: ID!): TodoList
-
-  """
-  Lookup the list of TodoList entities.
-  """
   todoLists(
     """
     Returns the first _n_ elements from the list.
@@ -68,24 +46,9 @@ type Query {
 }
 
 type Mutation {
-  """
-  Delete a TodoItem
-  """
   deleteTodoItem(input: DeleteTodoItemInput!): DeleteTodoItemPayload!
-  
-  """
-  Delete a TodoList
-  """
   deleteTodoList(input: DeleteTodoListInput!): DeleteTodoListPayload!
-
-  """
-  Save a TodoItem (creating if it doesn't exist)
-  """
   saveTodoItem(input: SaveTodoItemInput!): SaveTodoItemPayload!
-
-  """
-  Save a TodoList (creating if it doesn't exist)
-  """
   saveTodoList(input: SaveTodoListInput!): SaveTodoListPayload!
 }
 
@@ -99,8 +62,7 @@ interface Node {
 input TodoListFilterInput {
   and: [TodoListFilterInput!]
   or: [TodoListFilterInput!]
-  items: ListFilterInputTypeOfTodoItemFilterInput
-  id: UuidOperationFilterInput
+  id: IdOperationFilterInput
   name: StringOperationFilterInput
   description: StringOperationFilterInput
   createdDate: DateTimeOperationFilterInput
@@ -135,34 +97,15 @@ type TodoListsConnection {
   nodes: [TodoList!]
 }
 
-"""
-Error that is produced by the saveTodoItem mutation if the provided / linked list does not exist.
-The message will contain the ID of the list that could not be found.
-"""
-type ListDoesNotExistError implements Error {
+type TodoServiceError implements Error {
   message: String!
 }
 
-input ListFilterInputTypeOfTodoItemFilterInput {
-  all: TodoItemFilterInput
-  none: TodoItemFilterInput
-  some: TodoItemFilterInput
-  any: Boolean
-}
-
-input UuidOperationFilterInput {
-  eq: UUID
-  neq: UUID
-  in: [UUID]
-  nin: [UUID]
-  gt: UUID
-  ngt: UUID
-  gte: UUID
-  ngte: UUID
-  lt: UUID
-  nlt: UUID
-  lte: UUID
-  nlte: UUID
+input IdOperationFilterInput {
+  eq: ID
+  neq: ID
+  in: [ID]
+  nin: [ID]
 }
 
 input StringOperationFilterInput {
@@ -226,7 +169,6 @@ type PageInfo {
 }
 
 type TodoList implements Node {
-  items: [TodoItem!]
   id: ID!
   name: String!
   description: String
@@ -253,52 +195,28 @@ interface Error {
   message: String!
 }
 
-input TodoItemFilterInput {
-  and: [TodoItemFilterInput!]
-  or: [TodoItemFilterInput!]
-  list: TodoListFilterInput
-  listId: UuidOperationFilterInput
-  state: TodoItemStateOperationFilterInput
-  dueDate: DateTimeOperationFilterInput
-  completedDate: DateTimeOperationFilterInput
-  id: UuidOperationFilterInput
-  name: StringOperationFilterInput
-  description: StringOperationFilterInput
-  createdDate: DateTimeOperationFilterInput
-  updatedDate: DateTimeOperationFilterInput
-}
+"""
+The `DateTime` scalar represents an ISO-8601 compliant date time type.
+"""
+scalar DateTime
 
-
-
-input TodoItemStateOperationFilterInput {
-  eq: TodoItemState
-  neq: TodoItemState
-  in: [TodoItemState!]
-  nin: [TodoItemState!]
-}
-
-enum TodoItemState {
-  TODO
-  IN_PROGRESS
-  DONE
-}
+scalar UUID
 
 type TodoItem implements Node {
-  list: TodoList
-  listId: UUID!
-  state: TodoItemState!
-  dueDate: DateTime
-  completedDate: DateTime
   id: ID!
   name: String!
   description: String
   createdDate: DateTime!
   updatedDate: DateTime!
+  listId: ID!
+  state: TodoItemState!
+  dueDate: DateTime
+  completedDate: DateTime
 }
 
 input SaveTodoItemInput {
   id: ID
-  listId: UUID!
+  listId: ID!
   name: String!
   state: TodoItemState!
   description: String
@@ -310,6 +228,12 @@ input SaveTodoListInput {
   id: ID
   name: String!
   description: String
+}
+
+enum TodoItemState {
+  TODO
+  IN_PROGRESS
+  DONE
 }
 
 input DeleteTodoItemInput {
@@ -328,13 +252,16 @@ type DeleteTodoListPayload {
   success: Boolean
 }
 
-union SaveTodoItemError = ListDoesNotExistError
+union SaveTodoItemError = TodoServiceError
 
 type SaveTodoItemPayload {
   todoItem: TodoItem
   errors: [SaveTodoItemError!]
 }
 
+union SaveTodoListError = TodoServiceError
+
 type SaveTodoListPayload {
   todoList: TodoList
+  errors: [SaveTodoListError!]
 }
