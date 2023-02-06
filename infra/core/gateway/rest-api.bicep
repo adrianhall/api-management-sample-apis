@@ -30,18 +30,18 @@ var logSettings = {
   body: { bytes: logBytes }
 }
 
-resource apimService 'Microsoft.ApiManagement/service@2022-04-01-preview' existing = {
+resource apimService 'Microsoft.ApiManagement/service@2022-08-01' existing = {
   name: apimServiceName
 }
 
-resource apimLogger 'Microsoft.ApiManagement/service/loggers@2022-04-01-preview' existing = if (!empty(apimLoggerName)) {
+resource apimLogger 'Microsoft.ApiManagement/service/loggers@2022-08-01' existing = if (!empty(apimLoggerName)) {
   name: apimLoggerName
   parent: apimService
 }
 
 var realPolicy = empty(policy) ? loadTextContent('./default-policy.xml') : policy
 
-resource restApi 'Microsoft.ApiManagement/service/apis@2022-04-01-preview' = {
+resource restApi 'Microsoft.ApiManagement/service/apis@2022-08-01' = {
   name: name
   parent: apimService
   properties: {
@@ -56,7 +56,7 @@ resource restApi 'Microsoft.ApiManagement/service/apis@2022-04-01-preview' = {
   }
 }
 
-resource apimNamedValue 'Microsoft.ApiManagement/service/namedValues@2022-04-01-preview' = [for nv in namedValues: {
+resource apimNamedValue 'Microsoft.ApiManagement/service/namedValues@2022-08-01' = [for nv in namedValues: {
   name: nv.key
   parent: apimService
   properties: {
@@ -66,7 +66,7 @@ resource apimNamedValue 'Microsoft.ApiManagement/service/namedValues@2022-04-01-
   }
 }]
 
-resource apiPolicy 'Microsoft.ApiManagement/service/apis/policies@2022-04-01-preview' = {
+resource apiPolicy 'Microsoft.ApiManagement/service/apis/policies@2022-08-01' = {
   name: 'policy'
   parent: restApi
   properties: {
@@ -78,7 +78,7 @@ resource apiPolicy 'Microsoft.ApiManagement/service/apis/policies@2022-04-01-pre
   ]
 }
 
-resource diagnosticsPolicy 'Microsoft.ApiManagement/service/apis/diagnostics@2022-04-01-preview' = if (!empty(apimLoggerName)) {
+resource diagnosticsPolicy 'Microsoft.ApiManagement/service/apis/diagnostics@2022-08-01' = if (!empty(apimLoggerName)) {
   name: 'applicationinsights'
   parent: restApi
   properties: {

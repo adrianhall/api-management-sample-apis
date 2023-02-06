@@ -32,7 +32,7 @@ param applicationInsightsName string
 @description('Azure Cache for Redis Service Name')
 param redisCacheServiceName string = ''
 
-resource apimService 'Microsoft.ApiManagement/service@2022-04-01-preview' = {
+resource apimService 'Microsoft.ApiManagement/service@2022-08-01' = {
   name: name
   location: location
   tags: tags
@@ -46,7 +46,7 @@ resource apimService 'Microsoft.ApiManagement/service@2022-04-01-preview' = {
   }
 }
 
-resource apimLogger 'Microsoft.ApiManagement/service/loggers@2021-12-01-preview' = if (!empty(applicationInsightsName)) {
+resource apimLogger 'Microsoft.ApiManagement/service/loggers@2022-08-01' = if (!empty(applicationInsightsName)) {
   name: 'app-insights-logger'
   parent: apimService
   properties: {
@@ -60,7 +60,7 @@ resource apimLogger 'Microsoft.ApiManagement/service/loggers@2021-12-01-preview'
   }
 }
 
-resource apimCache 'Microsoft.ApiManagement/service/caches@2022-04-01-preview' = if (!empty(redisCacheServiceName)) {
+resource apimCache 'Microsoft.ApiManagement/service/caches@2022-08-01' = if (!empty(redisCacheServiceName)) {
   name: 'redis-cache'
   parent: apimService
   properties: {
@@ -70,7 +70,7 @@ resource apimCache 'Microsoft.ApiManagement/service/caches@2022-04-01-preview' =
   }
 }
 
-resource apimNamedValue 'Microsoft.ApiManagement/service/namedValues@2022-04-01-preview' = [for nv in namedValues: {
+resource apimNamedValue 'Microsoft.ApiManagement/service/namedValues@2022-08-01' = [for nv in namedValues: {
   name: nv.key
   parent: apimService
   properties: {

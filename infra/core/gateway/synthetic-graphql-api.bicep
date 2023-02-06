@@ -33,18 +33,18 @@ var logSettings = {
   body: { bytes: logBytes }
 }
 
-resource apimService 'Microsoft.ApiManagement/service@2022-04-01-preview' existing = {
+resource apimService 'Microsoft.ApiManagement/service@2022-08-01' existing = {
   name: apimServiceName
 }
 
-resource apimLogger 'Microsoft.ApiManagement/service/loggers@2022-04-01-preview' existing = if (!empty(apimLoggerName)) {
+resource apimLogger 'Microsoft.ApiManagement/service/loggers@2022-08-01' existing = if (!empty(apimLoggerName)) {
   name: apimLoggerName
   parent: apimService
 }
 
 var realPolicy = empty(policy) ? loadTextContent('./default-policy.xml') : policy
 
-resource graphqlApi 'Microsoft.ApiManagement/service/apis@2022-04-01-preview' = {
+resource graphqlApi 'Microsoft.ApiManagement/service/apis@2022-08-01' = {
   name: name
   parent: apimService
   properties: {
@@ -58,7 +58,7 @@ resource graphqlApi 'Microsoft.ApiManagement/service/apis@2022-04-01-preview' = 
   }
 }
 
-resource apiNamedValues 'Microsoft.ApiManagement/service/namedValues@2022-04-01-preview' = [for item in namedValues: {
+resource apiNamedValues 'Microsoft.ApiManagement/service/namedValues@2022-08-01' = [for item in namedValues: {
   name: item.name
   parent: apimService
   properties: {
@@ -67,7 +67,7 @@ resource apiNamedValues 'Microsoft.ApiManagement/service/namedValues@2022-04-01-
   }
 }]
 
-resource graphqlSchema 'Microsoft.ApiManagement/service/apis/schemas@2022-04-01-preview' = {
+resource graphqlSchema 'Microsoft.ApiManagement/service/apis/schemas@2022-08-01' = {
   name: 'graphql'
   parent: graphqlApi
   properties: {
@@ -78,7 +78,7 @@ resource graphqlSchema 'Microsoft.ApiManagement/service/apis/schemas@2022-04-01-
   }
 }
 
-resource graphqlPolicy 'Microsoft.ApiManagement/service/apis/policies@2022-04-01-preview' = {
+resource graphqlPolicy 'Microsoft.ApiManagement/service/apis/policies@2022-08-01' = {
   name: 'policy'
   parent: graphqlApi
   properties: {
@@ -90,17 +90,20 @@ resource graphqlPolicy 'Microsoft.ApiManagement/service/apis/policies@2022-04-01
   ]
 }
 
-// module graphqlResolver 'synthetic-graphql-resolver.bicep' = [for item in resolvers: {
-//   parent: graphqlApi
-//   properties: {
-//     type: item.type
-//     field: item.field
-//     policy: item.policy
-//   }
-//   dependsOn: [ apiNamedValues ]
-// }]
+module graphqlResolver 'synthetic-graphql-resolver.bicep' = [for item in resolvers: {
+  name: 'graphql-resolver-${item.name}'
+  params: {
+    apimServiceName: apimServiceName
+    graphqlApiName: graphqlApi.name
+    resolverName: item.name
+    schemaType: item.type
+    schemaField: item.field
+    resolverPolicy: item.policy
+  }
+  dependsOn: [ apiNamedValues, graphqlSchema, graphqlPolicy ]
+}]
 
-resource diagnosticsPolicy 'Microsoft.ApiManagement/service/apis/diagnostics@2022-04-01-preview' = if (!empty(apimLoggerName)) {
+resource diagnosticsPolicy 'Microsoft.ApiManagement/service/apis/diagnostics@2022-08-01' = if (!empty(apimLoggerName)) {
   name: 'applicationinsights'
   parent: graphqlApi
   properties: {

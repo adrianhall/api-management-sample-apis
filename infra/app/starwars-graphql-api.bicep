@@ -6,93 +6,75 @@ param apiManagementLoggerName string = ''
 
 var resolvers = [
   { 
-    type: 'Query'
-    field: 'characters' 
+    name: 'query-characters', type: 'Query', field: 'characters' 
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/query-characters.xml') 
   }
   { 
-    type: 'Query'
-    field: 'films'
+    name: 'query-films', type: 'Query', field: 'films'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/query-films.xml') 
   }
   { 
-    type: 'Query'
-    field: 'planets'
+    name: 'query-planets', type: 'Query', field: 'planets'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/query-planets.xml') 
   }
   { 
-    type: 'Query'
-    field: 'species'
+    name: 'query-species', type: 'Query', field: 'species'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/query-species.xml') 
   }
   { 
-    type: 'Query'
-    field: 'starships'
+    name: 'query-starships', type: 'Query', field: 'starships'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/query-starships.xml') 
   }
   { 
-    type: 'Query'
-    field: 'vehicles'
+    name: 'query-vehicles', type: 'Query', field: 'vehicles'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/query-vehicles.xml') 
   }
   { 
-    type: 'Query'
-    field: 'getCharacterById'
+    name: 'query-getcharacterbyid', type: 'Query', field: 'getCharacterById'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/query-getCharacterById.xml') 
   }
   { 
-    type: 'Query'
-    field: 'getFilmById'
+    name: 'query-getfilmbyid', type: 'Query', field: 'getFilmById'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/query-getFilmById.xml') 
   }
   { 
-    type: 'Query'
-    field: 'getPlanetById'
+    name: 'query-getplanetbyid', type: 'Query', field: 'getPlanetById'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/query-getPlanetById.xml') 
   }
   { 
-    type: 'Query'
-    field: 'getSpeciesById'
+    name: 'query-getspeciesbyid', type: 'Query', field: 'getSpeciesById'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/query-getSpeciesById.xml') 
   }
   { 
-    type: 'Query'
-    field: 'getStarshipById'
+    name: 'query-getstarshipbyid', type: 'Query', field: 'getStarshipById'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/query-getStarshipById.xml') 
   }
   { 
-    type: 'Query'
-    field: 'getVehicleById'
+    name: 'query-getvehiclebyid', type: 'Query', field: 'getVehicleById'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/query-getVehicleById.xml') 
   }
   { 
-    type: 'Film'
-    field: '*'
+    name: 'film-all', type: 'Film', field: '*'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/film-all.xml') 
   }
   { 
-    type: 'Person'
-    field: '*'
+    name: 'person-all', type: 'Person', field: '*'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/person-all.xml') 
   }
   { 
-    type: 'Planet'
-    field: '*'
+    name: 'planet-all', type: 'Planet', field: '*'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/planet-all.xml') 
   }
   { 
-    type: 'Species'
-    field: '*'
+    name: 'species-all', type: 'Species', field: '*'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/species-all.xml') 
   }
   { 
-    type: 'Starship'
-    field: '*'
+    name: 'starship-all', type: 'Starship', field: '*'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/starship-all.xml') 
   }
   { 
-    type: 'Vehicle'
-    field: '*'
+    name: 'vehicle-all', type: 'Vehicle', field: '*'
     policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/resolvers/vehicle-all.xml') 
   }
 ]
