@@ -10,9 +10,6 @@ param apimLoggerName string
 @description('The path that will be exposed by the API Management service')
 param path string = 'graphql'
 
-@description('The URL of the backend service to proxy the request to')
-param serviceUrl string
-
 @description('The policy to configure.  If blank, a default policy will be used.')
 param policy string = ''
 
@@ -52,7 +49,6 @@ resource graphqlApi 'Microsoft.ApiManagement/service/apis@2022-08-01' = {
     apiType: 'graphql'
     displayName: name
     protocols: [ 'https', 'wss' ]
-    serviceUrl: serviceUrl
     subscriptionRequired: false
     type: 'graphql'
   }
