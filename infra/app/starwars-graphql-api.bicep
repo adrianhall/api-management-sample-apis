@@ -86,8 +86,8 @@ module graphqlApiDefinition '../core/gateway/synthetic-graphql-api.bicep' = {
     apimServiceName: apiManagementServiceName
     apimLoggerName: apiManagementLoggerName
     path: path
-    policy: loadTextContent('../../src/ApiManagement/TodoGraphQLApi/policy.xml')
-    schema: loadTextContent('../../src/ApiManagement/TodoGraphQLApi/schema.graphql')
+    policy: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/policy.xml')
+    schema: loadTextContent('../../src/ApiManagement/StarWarsGraphQLApi/schema.graphql')
     namedValues: [
       { name: 'starwarsapi', value: serviceUri }
     ]
