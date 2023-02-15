@@ -46,12 +46,15 @@ param resourceGroupName string = ''
 
 // Underlying API Service Names
 param starwarsRestServiceName string = ''
-param starwarsGraphQLServiceName string = ''
 param todoRestServiceName string = ''
 param todoGraphQLServiceName string = ''
 
 // API Management instance
 param apiManagementServiceName string = ''
+
+// Location for the Azure App Insights Resources
+// Note that App Insights is not available in westcentralus
+param appInsightsLocationName string = ''
 
 // ---------------------------------------------------------------------------------------------
 //  Variables
@@ -77,7 +80,7 @@ module monitoring './core/monitor/monitoring.bicep' = {
   name: 'monitoring'
   scope: rg
   params: {
-    location: location
+    location: !empty(appInsightsLocationName) ? appInsightsLocationName : location
     tags: tags
     logAnalyticsName: !empty(logAnalyticsName) ? logAnalyticsName : '${abbrs.operationalInsightsWorkspaces}${resourceToken}'
     applicationInsightsName: !empty(applicationInsightsName) ? applicationInsightsName : '${abbrs.insightsComponents}${resourceToken}'
