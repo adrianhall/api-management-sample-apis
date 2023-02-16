@@ -16,4 +16,9 @@ services:
     project: ./src/Todo.GraphQLApi
     language: csharp
     host: appservice
+  todo-react-rest:
+    project: ./src/todo.rest.web
+    dist: build
+    language: js
+    host: staticwebapp
     

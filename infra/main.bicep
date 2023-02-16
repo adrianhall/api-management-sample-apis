@@ -49,6 +49,9 @@ param starwarsRestServiceName string = ''
 param todoRestServiceName string = ''
 param todoGraphQLServiceName string = ''
 
+// Web applications
+param todoReactRestWebServiceName string = ''
+
 // API Management instance
 param apiManagementServiceName string = ''
 
@@ -203,6 +206,16 @@ module todoRestApiService './app/todo-rest-api.bicep' = {
   }
 }
 
+module todoReactApp './app/todo-react-rest.bicep' = {
+  name: 'todo-react-rest-app'
+  scope: rg
+  params: {
+    name: !empty(todoReactRestWebServiceName) ? todoReactRestWebServiceName : '${abbrs.webStaticSites}-todo-rest-${resourceToken}'
+    location: location
+    tags: union(tags, { 'azd-service-name': 'todo-react-rest' })
+  }
+}
+
 // ---------------------------------------------------------------------------------------------
 //  API: Todo GraphQL
 // ---------------------------------------------------------------------------------------------
@@ -239,6 +252,8 @@ module todoSynGQLApiService './app/todo-syngql-api.bicep' = {
   }
 }
 
+
+
 // ---------------------------------------------------------------------------------------------
 //  OUTPUTS
 //
@@ -254,3 +269,8 @@ output STARWARS_SYNGQL_GATEWAY_URI string = starWarsSynQLApiService.outputs.gate
 output TODO_REST_GATEWAY_URI string = todoRestApiService.outputs.gatewayUri
 output TODO_GRAPHQL_GATEWAY_URI string = todoGraphQLApiService.outputs.gatewayUri
 output TODO_SYNGQL_GATEWAY_URI string = todoSynGQLApiService.outputs.gatewayUri
+
+// Outputs for the TODO_REACT_REST app
+output TODO_REACT_REST_API_BASE_URL string = todoRestApiService.outputs.gatewayUri
+output TODO_REACT_REST_APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.applicationInsightsConnectionString
+output TODO_REACT_REST_WEB_BASE_URL string = todoReactApp.outputs.SERVICE_WEB_URI
