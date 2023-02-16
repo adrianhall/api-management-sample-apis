@@ -170,8 +170,8 @@ module starWarsRestApiService './app/starwars-rest-api.bicep' = {
 // ---------------------------------------------------------------------------------------------
 //  API: Star Wars Synthetic GraphQL
 // ---------------------------------------------------------------------------------------------
-module starWarsGraphQLApiService './app/starwars-graphql-api.bicep' = {
-  name: 'starwars-graphql-api-service'
+module starWarsSynQLApiService './app/starwars-syngql-api.bicep' = {
+  name: 'starwars-syngql-api-service'
   scope: rg
   params: {
     apiManagementServiceName: apiManagement.outputs.serviceName
@@ -179,6 +179,7 @@ module starWarsGraphQLApiService './app/starwars-graphql-api.bicep' = {
     serviceUri: starWarsRestApiService.outputs.serviceUri
   }
 }
+
 // ---------------------------------------------------------------------------------------------
 //  API: Todo REST
 // ---------------------------------------------------------------------------------------------
@@ -225,6 +226,18 @@ module todoGraphQLApiService './app/todo-graphql-api.bicep' = {
   }
 }
 
+// ---------------------------------------------------------------------------------------------
+//  API: Todo Synthetic GraphQL
+// ---------------------------------------------------------------------------------------------
+module todoSynGQLApiService './app/todo-syngql-api.bicep' = {
+  name: 'todo-syngql-api-service'
+  scope: rg
+  params: {
+    apiManagementServiceName: apiManagement.outputs.serviceName
+    apiManagementLoggerName: apiManagement.outputs.loggerName
+    serviceUri: todoRestApiService.outputs.serviceUri
+  }
+}
 
 // ---------------------------------------------------------------------------------------------
 //  OUTPUTS
@@ -237,5 +250,7 @@ output API_MANAGEMENT_SERVICE_URI string = apiManagement.outputs.uri
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 output STARWARS_REST_GATEWAY_URI string = starWarsRestApiService.outputs.gatewayUri
+output STARWARS_SYNGQL_GATEWAY_URI string = starWarsSynQLApiService.outputs.gatewayUri
 output TODO_REST_GATEWAY_URI string = todoRestApiService.outputs.gatewayUri
 output TODO_GRAPHQL_GATEWAY_URI string = todoGraphQLApiService.outputs.gatewayUri
+output TODO_SYNGQL_GATEWAY_URI string = todoSynGQLApiService.outputs.gatewayUri

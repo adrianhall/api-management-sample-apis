@@ -1,5 +1,5 @@
 param serviceUri string
-param path string = 'starwars-graphql'
+param path string = 'starwars-syngql'
 
 param apiManagementServiceName string
 param apiManagementLoggerName string = ''
@@ -80,9 +80,9 @@ var resolvers = [
 ]
 
 module graphqlApiDefinition '../core/gateway/synthetic-graphql-api.bicep' = {
-  name: 'starwars-graphql-api-definition'
+  name: 'starwars-syngql-api-definition'
   params: {
-    name: 'starwars-graphql'
+    name: 'starwars-syngql'
     apimServiceName: apiManagementServiceName
     apimLoggerName: apiManagementLoggerName
     path: path

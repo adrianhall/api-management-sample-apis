@@ -1,0 +1,43 @@
+"""
+The `DateTime` scalar represents an ISO-8601 compliant date time type.
+"""
+scalar DateTime
+
+enum TodoItemState {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+"""
+The node interface is implemented by entities that have a global unique identifier.
+"""
+interface Node {
+  id: ID!
+}
+
+type TodoList implements Node {
+  id: ID!
+  name: String!
+  description: String
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  items(skip: Int, top: Int): [TodoItem]
+}
+
+type TodoItem implements Node {
+  id: ID!
+  name: String!
+  description: String
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  listId: ID!
+  state: TodoItemState!
+  dueDate: DateTime
+  completedDate: DateTime
+}
+
+type Query {
+    todoLists(skip: Int, top: Int): [TodoList]
+    todoListById(id: ID!): TodoList
+}
