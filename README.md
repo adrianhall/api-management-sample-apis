@@ -2,11 +2,16 @@
 
 This repository is a template for the [Azure Developer CLI](https://aka.ms/azure-dev/overview) (azd) that includes several different APIs:
 
-- A read-only REST API holding data about Star Wars films.
-- A read-write REST API for a Todo List.
-- A read-write GraphQL API for a Todo List.
+- Star Wars API - a read-only API about the Star Wars films
+  - REST (includes caching demonstration)
+  - Synthetic GraphQL
 
-Others will be added in the future.  For each backend service, the appropriate configuration is added to the Azure API Management instance to handle that API.
+- Todo List API - a read/write API for storing todo lists.
+  - REST
+  - GraphQL
+  - Synthetic GraphQL (includes subscription demonstration)
+
+Others will be added in the future.  For each backend service, the appropriate configuration is added to the Azure API Management instance to handle that API, and logging for the API is handled via Azure App Insights.
 
 ## Prerequisites
 
@@ -46,9 +51,11 @@ When `azd up` is complete it will output the URLs for each backend service. You 
 
 This application utilizes the following Azure resources:
 
-- [**Azure App Services**](https://docs.microsoft.com/azure/app-service/) to host each API backend.
-- [**Azure Cosmos DB SQL API**](https://docs.microsoft.com/learn/modules/intro-to-azure-cosmos-db-core-api/) for storage.
-- [**Azure Monitor**](https://docs.microsoft.com/azure/azure-monitor/) for monitoring and logging.
+- [**Azure API Management**](https://learn.microsoft.com/azure/api-management/).
+- [**Azure App Services**](https://learn.microsoft.com/azure/app-service/).
+- [**Azure SQL**]https://learn.microsoft.com/azure/azure-sql/).
+- [**Azure Monitor**](https://learn.microsoft.com/azure/azure-monitor/).
+- [**Azure Cache for Redis**](https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/).
 
 > This template provisions resources to an Azure subscription that you will select upon provisioning them. Please refer to the [Pricing calculator for Microsoft Azure](https://azure.microsoft.com/pricing/calculator/) and, if needed, update the included Azure resource definitions found in `infra/main.bicep` to suit your needs.
 
