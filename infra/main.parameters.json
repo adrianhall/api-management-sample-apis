@@ -13,6 +13,9 @@
         },
         "appInsightsLocationName": {
             "value": "southcentralus"
+        },
+        "staticSitesLocationName": {
+            "value": "centralus"
         }
     }
 }

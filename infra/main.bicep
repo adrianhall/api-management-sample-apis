@@ -58,6 +58,8 @@ param apiManagementServiceName string = ''
 // Location for the Azure App Insights Resources
 // Note that App Insights is not available in westcentralus
 param appInsightsLocationName string = ''
+// Note that Static Web Apps is only available in 6 regions
+param staticSitesLocationName string = ''
 
 // ---------------------------------------------------------------------------------------------
 //  Variables
@@ -211,7 +213,7 @@ module todoReactApp './app/todo-react-rest.bicep' = {
   scope: rg
   params: {
     name: !empty(todoReactRestWebServiceName) ? todoReactRestWebServiceName : '${abbrs.webStaticSites}-todo-rest-${resourceToken}'
-    location: location
+    location: !empty(staticSitesLocationName) ? staticSitesLocationName : location
     tags: union(tags, { 'azd-service-name': 'todo-react-rest' })
   }
 }
