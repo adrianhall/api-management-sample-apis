@@ -212,7 +212,7 @@ module todoReactApp './app/todo-react-rest.bicep' = {
   name: 'todo-react-rest-app'
   scope: rg
   params: {
-    name: !empty(todoReactRestWebServiceName) ? todoReactRestWebServiceName : '${abbrs.webStaticSites}-todo-rest-${resourceToken}'
+    name: !empty(todoReactRestWebServiceName) ? todoReactRestWebServiceName : 'todo-rest-${abbrs.webStaticSites}${resourceToken}'
     location: !empty(staticSitesLocationName) ? staticSitesLocationName : location
     tags: union(tags, { 'azd-service-name': 'todo-react-rest' })
   }

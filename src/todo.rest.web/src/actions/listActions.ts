@@ -7,7 +7,7 @@ import config from "../config"
 import { trackEvent } from "../services/telemetryService";
 import { ActionMethod, createPayloadAction, PayloadAction } from "./actionCreators";
 
-const listService = new ListService(config.api.baseUrl, '/lists');
+const listService = new ListService(config.api.baseUrl, config.api.listsPrefix);
 
 export interface ListActions {
     list(options?: QueryOptions): Promise<TodoList[]>

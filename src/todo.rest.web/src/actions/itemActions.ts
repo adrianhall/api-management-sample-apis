@@ -6,6 +6,8 @@ import { ActionTypes } from "./common";
 import config from "../config"
 import { ActionMethod, createPayloadAction, PayloadAction } from "./actionCreators";
 
+const itemsPrefix = (listId: string) => `${config.api.listsPrefix}/${listId}/items`;
+
 export interface ItemActions {
     list(listId: string, options?: QueryOptions): Promise<TodoItem[]>
     select(item?: TodoItem): Promise<TodoItem>
@@ -15,7 +17,7 @@ export interface ItemActions {
 }
 
 export const list = (listId: string, options?: QueryOptions): ActionMethod<TodoItem[]> => async (dispatch: Dispatch<ListItemsAction>) => {
-    const itemService = new ItemService(config.api.baseUrl, `/lists/${listId}/items`);
+    const itemService = new ItemService(config.api.baseUrl, itemsPrefix(listId));
     const items = await itemService.getList(options);
 
     dispatch(listItemsAction(items));
@@ -30,7 +32,7 @@ export const select = (item?: TodoItem): ActionMethod<TodoItem | undefined> => a
 }
 
 export const load = (listId: string, id: string): ActionMethod<TodoItem> => async (dispatch: Dispatch<LoadItemAction>) => {
-    const itemService = new ItemService(config.api.baseUrl, `/lists/${listId}/items`);
+    const itemService = new ItemService(config.api.baseUrl, itemsPrefix(listId));
     const item = await itemService.get(id);
 
     dispatch(loadItemAction(item));
@@ -39,7 +41,7 @@ export const load = (listId: string, id: string): ActionMethod<TodoItem> => asyn
 }
 
 export const save = (listId: string, item: TodoItem): ActionMethod<TodoItem> => async (dispatch: Dispatch<SaveItemAction>) => {
-    const itemService = new ItemService(config.api.baseUrl, `/lists/${listId}/items`);
+    const itemService = new ItemService(config.api.baseUrl, itemsPrefix(listId));
     const newItem = await itemService.save(item);
 
     dispatch(saveItemAction(newItem));
@@ -48,7 +50,7 @@ export const save = (listId: string, item: TodoItem): ActionMethod<TodoItem> => 
 }
 
 export const remove = (listId: string, item: TodoItem): ActionMethod<void> => async (dispatch: Dispatch<DeleteItemAction>) => {
-    const itemService = new ItemService(config.api.baseUrl, `/lists/${listId}/items`);
+    const itemService = new ItemService(config.api.baseUrl, itemsPrefix(listId));
     if (item.id) {
         await itemService.delete(item.id);
         dispatch(deleteItemAction(item.id));
