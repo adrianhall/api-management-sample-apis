@@ -1,6 +1,6 @@
 <http-data-source>
 	<http-request>
 		<set-method>GET</set-method>
-		<set-url>@($"{{starwarsapi}}/film")</set-url>
+		<set-url>@($"{{starwarsapi}}/api/Film")</set-url>
 	</http-request>
 </http-data-source>
